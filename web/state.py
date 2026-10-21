@@ -118,8 +118,11 @@ def capability_enabled(cap: str) -> bool:
     caps = config.get("capabilities", {})
     if not isinstance(caps, dict):
         return False
-    # 公网随机扫描默认关闭（与命令行一致，capabilities.public_scan）
-    if cap in ("scan", "public_scan"):
+    # scan：基础扫描能力（默认 True，允许扫自己的服务器）
+    # public_scan：公网随机扫描（默认 False，禁止全网扫）
+    if cap == "scan":
+        return bool(caps.get("scan", True))
+    if cap == "public_scan":
         return bool(caps.get("public_scan", False))
     return bool(caps.get(cap, False))
 

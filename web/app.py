@@ -185,6 +185,11 @@ def run(db_path: str = "mcscanner.db", port: int = 8080, host: str = "127.0.0.1"
         logger.warning(f"[!] 代理初始化失败: {e}")
     logger.info(f"[*] Web 面板启动: http://{host}:{port}")
     if host in ("0.0.0.0", "::"):
+        import os
+        if not os.environ.get("ALLOW_PUBLIC_BIND"):
+            logger.error("[!] 安全拦截：绑定 0.0.0.0 需显式确认（无鉴权 + 含敏感凭据）")
+            logger.error("    如确需局域网访问，请设置环境变量 ALLOW_PUBLIC_BIND=1 后重试")
+            raise SystemExit(1)
         logger.warning("[!] 已绑定 0.0.0.0（局域网可访问）——本工具无鉴权，局域网内任何人可操作，请确保网络可信")
     app.run(host=host, port=port, debug=False, threaded=True)
 

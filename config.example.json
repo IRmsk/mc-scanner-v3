@@ -21,7 +21,12 @@
   "web_port": 8080,
   "web_token": "",
   "log_level": "INFO",
-  "warn_bot_max": 20,
+  "capabilities": {
+    "scan": true,
+    "public_scan": false,
+    "login_interact": false,
+    "rcon_commands": false
+  },
   "discord_webhook": "",
   "rescan_enabled": false,
   "duplicate_detection": false,
