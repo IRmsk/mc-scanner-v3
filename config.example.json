@@ -45,7 +45,7 @@
   "health_interval": 300,
   "health_probe_concurrency": 8,
   "health_probe_ip_gap": 1.5,
-  "health_monitor_db_extra": true,
+  "health_monitor_db_extra": false,
   "proxy_test_host": "",
   "proxy_test_port": 25565,
 

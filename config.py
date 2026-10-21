@@ -64,7 +64,7 @@ DEFAULT_CONFIG = {
     "health_interval": 300,       # 每轮探测间隔秒数（最小60）
     "health_probe_concurrency": 8,  # 同时探测数（不同IP并行；同IP由ip_gap节流）
     "health_probe_ip_gap": 1.5,   # 同IP两次探测最小间隔秒（不同IP不受限；同IP多端口时节流）
-    "health_monitor_db_extra": True,  # 是否额外监控数据库里有人气的服
+    "health_monitor_db_extra": False,  # 是否额外监控数据库里有人气的服（默认关，避免无授权探测第三方服务器）
 }
 
 _GLOBAL_CFG = None
