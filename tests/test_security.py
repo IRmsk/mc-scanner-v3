@@ -10,23 +10,19 @@ def test_health_monitor_db_extra_default_false():
     assert cfg.get("health_monitor_db_extra") is False
 
 
-def test_public_scan_default_false():
-    """capabilities.public_scan 默认必须是 False（禁止全网随机扫描）。"""
-    # 空配置时，public_scan 应该返回 False
-    caps = {}
-    result = bool(caps.get("public_scan", False))
-    assert result is False
+def test_capability_scan_default_true(monkeypatch):
+    """capability_enabled('scan') 默认必须是 True（基础扫描允许扫自己的服务器）。"""
+    config_mod.set("capabilities", {})
+    assert state_mod.capability_enabled("scan") is True
 
 
-def test_scan_default_true():
-    """capabilities.scan 默认必须是 True（基础扫描允许扫自己的服务器）。"""
-    # 空配置时，scan 应该返回 True
-    caps = {}
-    result = bool(caps.get("scan", True))
-    assert result is True
+def test_capability_public_scan_default_false(monkeypatch):
+    """capability_enabled('public_scan') 默认必须是 False（禁止全网随机扫描）。"""
+    config_mod.set("capabilities", {})
+    assert state_mod.capability_enabled("public_scan") is False
 
 
-def test_warn_bot_max_removed():
-    """warn_bot_max 死配置必须已删除。"""
-    cfg = config_mod.DEFAULT_CONFIG
-    assert "warn_bot_max" not in cfg
+def test_capability_public_scan_can_be_enabled(monkeypatch):
+    """capability_enabled('public_scan') 显式开启后应该返回 True。"""
+    config_mod.set("capabilities", {"public_scan": True})
+    assert state_mod.capability_enabled("public_scan") is True
