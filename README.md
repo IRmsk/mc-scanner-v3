@@ -365,6 +365,15 @@ python3 cli.py bot 192.168.1.10:25565 -u SecurityBot \
 
 完整默认值以 `config.py` 的 `DEFAULT_CONFIG` 为准。也可用环境变量覆盖敏感配置：`MC_AI_API_KEY`、`MC_DISCORD_WEBHOOK` 等。
 
+### 安全开关
+
+| 开关 | 默认 | 说明 |
+|---|---|---|
+| `ALLOW_PUBLIC_BIND` | 无（拒绝） | 绑定 `0.0.0.0` 需显式设置环境变量 `ALLOW_PUBLIC_BIND=1`，否则启动时拒绝 |
+| `capabilities.scan` | `true` | 基础扫描能力（允许扫自己的服务器） |
+| `capabilities.public_scan` | `false` | 公网随机扫描（禁止全网扫，需显式开启） |
+| `health_monitor_db_extra` | `false` | 是否额外监控数据库里有人气的服务器（默认关，避免无授权探测第三方） |
+
 ### 10. 常见问题 / FAQ
 
 **Q: 提示 `ModuleNotFoundError: No module named 'flask'`**
