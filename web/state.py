@@ -118,9 +118,9 @@ def capability_enabled(cap: str) -> bool:
     caps = config.get("capabilities", {})
     if not isinstance(caps, dict):
         return False
-    # scan 默认开启（基础能力），其余默认关闭
-    if cap == "scan":
-        return bool(caps.get("scan", True))
+    # 公网随机扫描默认关闭（与命令行一致，capabilities.public_scan）
+    if cap in ("scan", "public_scan"):
+        return bool(caps.get("public_scan", False))
     return bool(caps.get(cap, False))
 
 

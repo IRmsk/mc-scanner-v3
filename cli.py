@@ -689,7 +689,10 @@ def cmd_proxy(args, cfg):
         print(f"[+] 从 ProxyScrape 获取 {count} 个代理")
         return
     if args.check:
-        alive = manager.health_check(test_host=args.test_host or "mc.hypixel.net",
+        if not args.test_host:
+            print("[!] 请通过 --test-host 指定健康检查目标（避免默认向第三方生产服发探测流量）")
+            return
+        alive = manager.health_check(test_host=args.test_host,
                                       test_port=args.test_port or 25565,
                                       timeout=args.timeout or 5.0)
         print(f"[+] 健康检查完成: {alive}/{len(manager)} 个可用")

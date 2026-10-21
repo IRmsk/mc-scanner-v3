@@ -80,6 +80,8 @@ def register(app):
 
     @app.route('/api/scan/start', methods=['POST'])
     def start_scan():
+        if state.is_read_only():
+            return jsonify({"error": "只读模式：禁止扫描操作"}), 403
         data = request.json or {}
         targets_str = data.get("targets", "")
         if not targets_str:
