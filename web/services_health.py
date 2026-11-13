@@ -156,8 +156,10 @@ def _health_monitor_loop(once=False):
                         conn = None
                         try:
                             conn = sqlite3.connect(db_path)
+                            # INSERT OR REPLACE：健康监控每轮都可能在同一秒内重复写同一台服务器
                             conn.execute(
-                                'INSERT INTO server_popularity (ip, port, players_online, players_max, recorded_at) VALUES (?,?,?,?,?)',
+                                'INSERT OR REPLACE INTO server_popularity '
+                                '(ip, port, players_online, players_max, recorded_at) VALUES (?,?,?,?,?)',
                                 (ip, port, online, r.get('max', 0), datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S'))
                             )
                             conn.commit()

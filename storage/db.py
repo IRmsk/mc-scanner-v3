@@ -250,12 +250,16 @@ def upsert_many(db_path: str, records: list) -> int:
     conn.executemany(UPSERT_SQL, rows)
     # 记录人数趋势
     try:
-        now = datetime.now(timezone.utc).isoformat()
+        # 时间戳精确到秒，而主键是 (ip, port, recorded_at)：同一秒内重复 upsert
+        # 同一台服务器（批量导入、多线程引擎回写）必然撞主键。裸 INSERT 时
+        # executemany 整体失败，一次冲突就把这一批的趋势数据全丢掉，还刷一条警告。
+        now = _utc_now_str()
         pop_rows = [(r.get('ip'), r.get('port'), r.get('players_online', 0), r.get('players_max', 0), now)
                     for r in records if r.get('players_online', 0) > 0]
         if pop_rows:
             conn.executemany(
-                'INSERT INTO server_popularity (ip, port, players_online, players_max, recorded_at) VALUES (?,?,?,?,?)',
+                'INSERT OR REPLACE INTO server_popularity '
+                '(ip, port, players_online, players_max, recorded_at) VALUES (?,?,?,?,?)',
                 pop_rows
             )
     except Exception as e:
