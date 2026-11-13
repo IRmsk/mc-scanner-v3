@@ -6,8 +6,8 @@
 import asyncio
 import threading
 import time
-from datetime import datetime
 from collections import deque
+from datetime import datetime
 
 from scanner.async_portscan import scan_ports_async
 from scanner.async_probe import async_slp_probe

@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 """AI assistant helpers."""
 import os
-import time
-import threading
 import sqlite3
+import threading
+import time
+
 import config
+
 try:
     from web import state
     from web.observer_session import ObserverSession
@@ -127,7 +129,8 @@ def _handle_assistant_command(msg):
 
 def _parse_tool_call(text):
     """从AI返回的文本中解析JSON工具调用"""
-    import re, json
+    import json
+    import re
     # 尝试直接解析
     try:
         obj = json.loads(text.strip())

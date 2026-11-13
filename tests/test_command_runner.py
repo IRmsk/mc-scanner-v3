@@ -4,14 +4,14 @@
 v3.3 新增：命令执行器测试。
 测试命令脚本解析、条件命令、结果统计（不实际连接服务器）。
 """
-import sys
 import os
+import sys
 import tempfile
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.command_runner import CommandResult, CommandScript, CommandRunner
+from core.command_runner import CommandResult, CommandRunner, CommandScript
 
 
 class TestCommandResult(unittest.TestCase):

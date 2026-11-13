@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Login Start 字节构造测试：覆盖关键分界点。"""
+from core.buffer import offline_uuid, write_string, write_uuid
 from core.probe import build_login_start_payload
-from core.buffer import write_string, write_uuid, offline_uuid
 
 
 class TestLoginStartPayload:

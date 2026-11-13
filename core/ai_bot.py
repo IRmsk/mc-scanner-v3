@@ -3,16 +3,16 @@
 AI托管Bot模块。
 连接MC服务器后自动监听聊天，用AI回复玩家消息，支持定时主动发言。
 """
+import random
 import threading
 import time
-import random
 from collections import deque
 from datetime import datetime
 
-from core.bot import MCBot
-from core.ai_generator import generate_content, split_for_minecraft
 import logger as _log
+from core.ai_generator import generate_content, split_for_minecraft
 from core.ai_personas import get_personas
+from core.bot import MCBot
 
 _api_lock = threading.Lock()
 _last_api_time = 0.0

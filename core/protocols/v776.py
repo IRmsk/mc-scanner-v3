@@ -2,6 +2,7 @@
 26.2 仅新增 chat-spam-threshold-seconds / command-spam-threshold-seconds 服务器属性，
 包 ID 和聊天包格式与 26.1 完全相同"""
 from __future__ import annotations
+
 from .v775 import Handler as V775Handler
 
 

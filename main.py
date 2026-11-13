@@ -90,7 +90,7 @@ if __name__ == "__main__":
 
     # 加载WebView
     try:
-        from jnius import autoclass, PythonJavaClass, java_method
+        from jnius import PythonJavaClass, autoclass, java_method
         PythonActivity = autoclass('org.kivy.android.PythonActivity')
 
         # 自定义WebViewClient，拦截MSA登录redirect
@@ -110,7 +110,8 @@ if __name__ == "__main__":
                     try:
                         code = url.split('code=')[1].split('&')[0]
                         print(f"[MSA] 捕获到code 长度={len(code)}")
-                        import urllib.request, urllib.parse
+                        import urllib.parse
+                        import urllib.request
                         data = urllib.parse.urlencode({'code': code}).encode()
                         req = urllib.request.Request(f'http://127.0.0.1:{PORT}/api/msa/exchange', data=data, method='POST')
                         with urllib.request.urlopen(req, timeout=15) as resp:
@@ -132,7 +133,8 @@ if __name__ == "__main__":
                     try:
                         code = url.split('code=')[1].split('&')[0]
                         print(f"[MSA] onPageFinished捕获code 长度={len(code)}")
-                        import urllib.request, urllib.parse
+                        import urllib.parse
+                        import urllib.request
                         data = urllib.parse.urlencode({'code': code}).encode()
                         req = urllib.request.Request(f'http://127.0.0.1:{PORT}/api/msa/exchange', data=data, method='POST')
                         with urllib.request.urlopen(req, timeout=15) as resp:

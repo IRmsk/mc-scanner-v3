@@ -7,18 +7,18 @@ Mock Minecraft 服务器，用于测试。
 """
 import io
 import json
+import os
 import socket
 import struct
+import sys
 import threading
 import time
 import uuid
-import sys
-import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.buffer import write_varint, write_string, read_varint_from_stream
-from core.conn import PROTO_STATE_STATUS, PROTO_STATE_LOGIN
+from core.buffer import read_varint_from_stream, write_string, write_varint
+from core.conn import PROTO_STATE_LOGIN, PROTO_STATE_STATUS
 
 
 class SocketStream:

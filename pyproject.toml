@@ -1,0 +1,17 @@
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+# 起步只开"会改行为或明显是错"的规则，风格类规则等代码库稳定后再逐步加。
+# 1051 条历史问题一次性全绿不现实，但把闸门立在主干上是第一步。
+select = ["E4", "E7", "E9", "F", "I"]
+ignore = [
+    "E402",  # sys.path.insert 之后的必需导入，多处是刻意的
+    "E701",  # if x: return 的紧凑写法，本项目既定风格
+    "E702",  # 同上
+    "E741",  # 单字符 l 的歧义名，改动收益低于风险
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

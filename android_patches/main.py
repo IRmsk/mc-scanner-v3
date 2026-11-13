@@ -50,7 +50,7 @@ def start_flask():
 
         set_status("正在启动Web服务...")
         real_app.run(host="127.0.0.1", port=PORT, debug=False, use_reloader=False, threaded=True)
-    except Exception as e:
+    except Exception:
         err = traceback.format_exc()
         set_status(f"启动失败: {err}")
         print(f"[MC Scanner] Flask启动失败: {err}")

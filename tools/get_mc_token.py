@@ -9,8 +9,8 @@ import json
 import os
 import sys
 import time
-import urllib.request
 import urllib.parse
+import urllib.request
 
 # Minecraft Java 版官方 Azure 应用 ID
 CLIENT_ID = "00000000402b5328"

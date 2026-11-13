@@ -9,11 +9,11 @@ from typing import Union
 import config
 import logger
 from scanner.engine import ScanEngine
-from scanner.portscan import scan_ports, get_open_ports
-from scanner.masscan import has_masscan, run_masscan
-from scanner.random_scan import random_scan, parse_port_ranges
-from scanner.targets import parse_targets
 from scanner.exclude import Excluder
+from scanner.masscan import has_masscan, run_masscan
+from scanner.portscan import get_open_ports, scan_ports
+from scanner.random_scan import parse_port_ranges, random_scan
+from scanner.targets import parse_targets
 from storage import db
 
 

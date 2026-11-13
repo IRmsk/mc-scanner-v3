@@ -7,8 +7,8 @@
   python tools/send_command.py 1.2.3.4 25565 BotName --proto 767 "help"
 """
 import argparse
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 

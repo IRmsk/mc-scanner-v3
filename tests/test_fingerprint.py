@@ -4,13 +4,13 @@
 v3.2.1 新增：扩展服务端指纹识别测试。
 验证 bungeecord/velocity/node-minecraft-protocol/catserver/mohist 等指纹检测。
 """
-import sys
 import os
+import sys
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.fingerprint import fingerprint_server, SERVER_TYPE_PATTERNS, KNOWN_SERVER_TYPES
+from core.fingerprint import KNOWN_SERVER_TYPES, SERVER_TYPE_PATTERNS, fingerprint_server
 
 
 def _make_slp(version_name="", motd="", sample=None, modinfo=False):

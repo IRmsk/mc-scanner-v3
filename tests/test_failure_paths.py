@@ -4,17 +4,17 @@
 失败路径测试：超时、断连、协议回退全失败、扫描中强制停止。
 验证系统在异常情况下的健壮性。
 """
-import sys
 import os
+import sys
 import tempfile
 import threading
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from scanner.engine import ScanEngine
-from core.probe import slp_probe, auth_probe
 from core.bot import MCBot
+from core.probe import auth_probe, slp_probe
+from scanner.engine import ScanEngine
 
 
 class TestFailurePaths(unittest.TestCase):

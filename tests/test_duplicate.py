@@ -4,15 +4,13 @@
 v3.2.1 新增：重复服务器检测测试。
 验证精确指纹和软指纹的重复检测逻辑。
 """
-import sys
 import os
+import sys
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from scanner.duplicate import (
-    DuplicateDetector, compute_server_fingerprint, compute_soft_fingerprint
-)
+from scanner.duplicate import DuplicateDetector, compute_server_fingerprint, compute_soft_fingerprint
 
 
 class TestDuplicateDetection(unittest.TestCase):

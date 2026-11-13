@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Routes: scan_extra"""
-from flask import request, jsonify
+from flask import jsonify, request
+
 try:
     from web import state
 except ImportError:
@@ -61,8 +62,8 @@ def register(app):
         data = request.json or {}
         db_path = _safe_db_path(data.get("db_path", "mcscanner.db"))
         limit = max(1, min(_to_int(data.get("limit"), 50), 1000))
-        from storage import rescan as rescan_db
         from scanner.engine import ScanEngine
+        from storage import rescan as rescan_db
         rescan_db.init_rescan_queue(db_path)
         due = rescan_db.get_due_rescans(db_path, limit=limit)
         if not due:

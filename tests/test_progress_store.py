@@ -6,7 +6,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from scanner.safe import ScanProgressStore, PROGRESS_VERSION
+from scanner.safe import PROGRESS_VERSION, ScanProgressStore
 
 
 def _targets(n=5):

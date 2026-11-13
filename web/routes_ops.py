@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """Routes: ops"""
-from flask import jsonify
 import threading
+
+from flask import jsonify
+
 try:
     from web import state
 except ImportError:

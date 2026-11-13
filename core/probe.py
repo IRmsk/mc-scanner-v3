@@ -7,9 +7,9 @@ import json
 import socket
 import threading
 import time
-from .buffer import (write_varint, write_string, read_string, write_uuid,
-                     read_varint, offline_uuid)
-from .conn import MCConnection, PROTO_STATE_STATUS, PROTO_STATE_LOGIN
+
+from .buffer import offline_uuid, read_string, read_varint, write_string, write_uuid, write_varint
+from .conn import PROTO_STATE_LOGIN, PROTO_STATE_STATUS, MCConnection
 from .packets import get_login_packets, get_play_packets
 from .protocol import COMMON_PROTOCOLS
 

@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 """Routes: data"""
-from flask import request, jsonify, Response
-import os
 import json
-import time
+import os
 import sqlite3
+import time
 from datetime import datetime
+
+from flask import Response, jsonify, request
+
 from storage import db, favorites
+
 try:
     from web import state
 except ImportError:

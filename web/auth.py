@@ -145,7 +145,7 @@ def change_account(new_username: str, new_password: str) -> bool:
 
 def register(app):
     """注册登录相关路由。"""
-    from flask import request, jsonify
+    from flask import jsonify, request
 
     @app.route('/api/auth/login', methods=['POST'])
     def auth_login():

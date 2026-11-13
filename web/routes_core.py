@@ -2,6 +2,7 @@
 """Routes: core"""
 import html
 import os
+
 try:
     from web import state
 except ImportError:
@@ -29,8 +30,9 @@ def register(app):
     def auth_response():
         """FCL授权码流程回调：捕获code，完成正版登录"""
         from flask import request
-        from core.microsoft_auth import fcl_exchange_code, full_login_flow
+
         import config as cfg_mod
+        from core.microsoft_auth import fcl_exchange_code, full_login_flow
         code = request.args.get("code", "")
         error = request.args.get("error", "")
         if error:

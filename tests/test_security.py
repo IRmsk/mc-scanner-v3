@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """安全相关的测试：默认值、拦截条件、门禁。"""
 import pytest
+
 import config as config_mod
 import web.state as state_mod
 

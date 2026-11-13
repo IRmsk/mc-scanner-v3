@@ -1,8 +1,20 @@
 """1.19.1/1.19.2（协议 760）协议处理器，继承 761 仅覆盖差异"""
 from __future__ import annotations
-import struct, time
+
+import struct
+import time
+
+from ..buffer import (
+    BytesStream,
+    read_boolean_from_stream,
+    read_string_from_stream,
+    read_uuid_from_stream,
+    read_varint_from_stream,
+    write_string,
+    write_uuid,
+    write_varint,
+)
 from .v761 import Handler as V761Handler
-from ..buffer import write_string, write_varint, write_uuid, BytesStream, read_string_from_stream, read_varint_from_stream, read_boolean_from_stream, read_uuid_from_stream
 
 
 class Handler(V761Handler):

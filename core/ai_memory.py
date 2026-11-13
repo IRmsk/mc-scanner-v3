@@ -3,8 +3,8 @@
 纯本地规则提取，不花API钱。
 """
 import atexit
-import os
 import json
+import os
 import re
 import threading
 import time

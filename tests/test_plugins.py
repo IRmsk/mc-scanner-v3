@@ -4,16 +4,13 @@
 v3.3 新增：插件抓取测试。
 测试插件列表解析、版本解析、反作弊检测（不实际连接服务器）。
 """
-import sys
 import os
+import sys
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.plugins import (
-    PluginInfo, ServerIntel, _parse_plugins, _parse_version,
-    plugins_to_text
-)
+from core.plugins import PluginInfo, ServerIntel, _parse_plugins, _parse_version, plugins_to_text
 
 
 class TestPluginParsing(unittest.TestCase):

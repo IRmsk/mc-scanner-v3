@@ -3,12 +3,12 @@
 生成随机公网 IP 和端口，批量扫描寻找 Minecraft 服务器
 支持异步高速模式、排除列表（含中国IP段）
 """
+import ipaddress
 import random
 import socket
-import ipaddress
 import threading
-from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
-from typing import Iterator, Tuple, List, Optional
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
+from typing import Iterator, List, Optional, Tuple
 
 try:
     from .exclude import Excluder

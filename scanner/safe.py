@@ -23,7 +23,6 @@ from collections import deque
 from dataclasses import dataclass, replace
 from typing import Optional
 
-
 # ---------------------------------------------------------------- 模式配置
 
 @dataclass

@@ -4,10 +4,10 @@
 端到端测试：Mock 服务器 + 扫描引擎 + 数据库。
 验证完整扫描流程的正确性。
 """
-import sys
 import os
-import time
+import sys
 import tempfile
+import time
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

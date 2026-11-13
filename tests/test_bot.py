@@ -4,8 +4,8 @@
 机器人登录测试。
 验证完整登录流程（握手 → Login → Configuration → Play）。
 """
-import sys
 import os
+import sys
 import time
 import unittest
 

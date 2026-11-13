@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 """Health monitor loop."""
-import os, json, sqlite3
+import json
+import os
+import sqlite3
 from datetime import datetime, timezone
+
 import config
 from core.notifier import _html_escape
+
 try:
     from web import state
 except ImportError:
@@ -20,6 +24,7 @@ def _health_monitor_loop(once=False):
     """后台健康监控线程：定期检查收藏的服务器，状态/人数变化时记录，一轮汇总发一封邮件。
     once=True 时只跑一轮就返回（供 Web "立即检查"按钮调用）。"""
     import asyncio
+
     from scanner.async_probe import async_slp_probe
     db_path = config.get("db_path", "mcscanner.db")
     _log(f"[健康监控] {'启动单次手动检查' if once else '启动定时监控'}")

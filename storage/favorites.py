@@ -11,7 +11,7 @@ import threading
 from datetime import datetime
 from typing import Optional
 
-from core.probe import slp_probe, auth_probe
+from core.probe import auth_probe, slp_probe
 
 # 可重入锁：读-改-写整段加锁，避免健康监控线程与 Web 操作并发丢更新
 _LOCK = threading.RLock()

@@ -9,13 +9,13 @@
 - 失败代理自动剔除并更新文件
 - 避免连续选中同一个代理
 """
+import logging
 import os
 import random
 import socket
 import struct
 import threading
 import time
-import logging
 from typing import Optional
 
 logger = logging.getLogger(__name__)

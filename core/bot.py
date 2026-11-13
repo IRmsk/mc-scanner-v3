@@ -4,16 +4,16 @@ Minecraft 机器人核心模块。
 完整支持 1.12.2 ~ 最新版本（协议 340+），保留 V1 的全部 5 种聊天消息格式。
 功能：连接 → 登录 → 配置 → 发消息/AuthMe → 保持连接 → 退出
 """
-import struct
-import time
-import threading
-import socket
 import os
+import socket
+import struct
+import threading
+import time
 from dataclasses import dataclass, field
 from typing import Optional
 
-from . import nbt as _nbt
 from . import chat as _chat
+from . import nbt as _nbt
 from .errors import BotError, BotErrorCode
 
 # 正版调试开关：默认关闭，设环境变量 MC_DEBUG=1 开启
@@ -28,13 +28,19 @@ def _dprint(msg):
     if _DEBUG:
         print(msg)
 
-from .buffer import (write_varint, write_string, read_varint_from_stream,
-                     read_string_from_stream, read_uuid_from_stream,
-                     offline_uuid, BytesStream)
-from .conn import MCConnection, PROTO_STATE_LOGIN, PROTO_STATE_CONFIGURATION, PROTO_STATE_PLAY
-from .packets import get_play_packets, get_config_packets, get_login_packets
-from .protocol import get_version_name, COMMON_PROTOCOLS
+from .buffer import (
+    BytesStream,
+    offline_uuid,
+    read_string_from_stream,
+    read_uuid_from_stream,
+    read_varint_from_stream,
+    write_string,
+    write_varint,
+)
+from .conn import PROTO_STATE_CONFIGURATION, PROTO_STATE_LOGIN, PROTO_STATE_PLAY, MCConnection
+from .packets import get_config_packets, get_login_packets, get_play_packets
 from .probe import probe_with_fallback
+from .protocol import COMMON_PROTOCOLS, get_version_name
 
 # 默认警告消息
 DEFAULT_WARNING_MESSAGES = [
@@ -441,7 +447,7 @@ class MCBot:
         vanilla 客户端对未知频道一律回复 declined（successful=false + 空载荷），
         Forge 的 "Vanilla acceptance test" 通过后即放行；若不回复，服务端会一直等待导致进不去。
         """
-        from .buffer import read_varint, read_string
+        from .buffer import read_string, read_varint
         try:
             msg_id, off = read_varint(payload, 0)
             channel, _ = read_string(payload, off)
@@ -700,7 +706,9 @@ class MCBot:
             else:
                 chat_session_id = 0x06
         try:
-            import base64, struct as _struct, uuid as _uuid
+            import base64
+            import struct as _struct
+            import uuid as _uuid
 
             # 生成随机会话UUID（Chat Session的第一个字段，不是玩家UUID）
             self._chat_session_uuid = _uuid.uuid4()
@@ -785,10 +793,13 @@ class MCBot:
         """构造带RSA签名的聊天包（759+，enforce-secure-profile服务器需要）。
         Minecraft聊天签名用RSA-2048+SHA256 PKCS#1 v1.5，签名256字节。
         使用pycryptodome（项目已依赖，CFB8加密也用它）。"""
-        import os, struct, time as _time
+        import os
+        import struct
+        import time as _time
+
+        from Crypto.Hash import SHA256
         from Crypto.PublicKey import RSA
         from Crypto.Signature import pkcs1_15
-        from Crypto.Hash import SHA256
 
         # 加载RSA私钥（Mojang返回PKCS#1 PEM格式"-----BEGIN RSA PRIVATE KEY-----"）
         rsa_key = RSA.import_key(self.profile_cert["privateKey"])
@@ -1090,6 +1101,7 @@ class MCBot:
         if not is_system and self.uuid:
             try:
                 import uuid as _uuid
+
                 from .buffer import BytesStream
                 stream = BytesStream(data)
                 # v768+ (1.21.2+)聊天包开头有varint Global Index，先跳过
@@ -1142,8 +1154,8 @@ class MCBot:
         """
         try:
             if self.protocol_version >= 760:
-                from .nbt import nbt_component_to_text
                 from .buffer import BytesStream
+                from .nbt import nbt_component_to_text
                 s = BytesStream(data)
                 return nbt_component_to_text(s)
             else:

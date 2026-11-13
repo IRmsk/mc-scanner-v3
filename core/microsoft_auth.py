@@ -18,9 +18,9 @@ Azure AD v2.0 设备码流程 + RSA/AES加密握手。
 """
 import json
 import os
-import urllib.request
-import urllib.parse
 import urllib.error
+import urllib.parse
+import urllib.request
 
 # 内置默认值（他人应用，仅为兼容保留；请按上面的说明替换为自己的）
 CLIENT_ID = "04b07795-8ddb-461a-bbee-02f9e1bf7b46"

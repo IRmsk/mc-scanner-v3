@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """Scan background worker with task queue support."""
 import os
-import time
 import threading
+import time
 from datetime import datetime
+
 try:
     from web import state
 except ImportError:
@@ -274,7 +275,7 @@ def _scan_worker(task_id, targets_list, scan_cfg):
                 )
                 results.extend(subnet_results)
         elif use_masscan:
-            from scanner.masscan import run_masscan, parse_masscan_json
+            from scanner.masscan import parse_masscan_json, run_masscan
             _log("使用 masscan 快速端口扫描")
             # targets_list 是 [(ip,port),...]，提取去重IP给masscan（masscan不认元组字符串）
             masscan_targets = ",".join(sorted(set(ip for ip, _ in targets_list)))

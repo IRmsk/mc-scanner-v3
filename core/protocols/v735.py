@@ -2,8 +2,16 @@
 1.16 起聊天包增加 position(Byte) + sender UUID(16字节)
 Player Info 仍用位掩码（1.16.2才改枚举值）"""
 from __future__ import annotations
+
+from ..buffer import (
+    BytesStream,
+    read_boolean_from_stream,
+    read_string_from_stream,
+    read_uuid_from_stream,
+    read_varint_from_stream,
+    write_string,
+)
 from .base import ProtocolHandler
-from ..buffer import write_string, BytesStream, read_string_from_stream, read_varint_from_stream, read_boolean_from_stream, read_uuid_from_stream
 
 
 class Handler(ProtocolHandler):

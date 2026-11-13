@@ -6,15 +6,15 @@
 可选 pysimdjson 加速 JSON 解析。
 """
 import asyncio
-import json
-import time
 import atexit
 import concurrent.futures
+import json
 import threading
+import time
 
-from core.buffer import write_varint, read_varint
+from core.buffer import read_varint, write_varint
+from core.probe import _motd_text, detect_core_type, extract_forge_channels, extract_mods
 from core.protocol import COMMON_PROTOCOLS
-from core.probe import detect_core_type, extract_mods, extract_forge_channels, _motd_text
 
 # 全局认证检测线程池（避免每次调用创建/销毁）
 _AUTH_EXECUTOR = concurrent.futures.ThreadPoolExecutor(max_workers=100, thread_name_prefix="auth-probe")

@@ -5,8 +5,8 @@
 可在扫描引擎中自动调用，也可通过 CLI 手动管理。
 """
 import logger
-from storage import rescan as rescan_db
 from storage import player_history as ph_db
+from storage import rescan as rescan_db
 
 
 class RescanScheduler:

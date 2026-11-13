@@ -4,16 +4,16 @@
 v3.2.1 新增：分布式任务分片测试。
 验证 CIDR 分片、任务领取、状态管理功能。
 """
-import sys
 import os
-import tempfile
 import shutil
+import sys
+import tempfile
 import threading
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from distributed.shard import shard_cidr, ShardManager
+from distributed.shard import ShardManager, shard_cidr
 
 
 class TestShardCidr(unittest.TestCase):

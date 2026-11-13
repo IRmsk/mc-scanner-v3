@@ -4,15 +4,15 @@
 融合 V1 的功能完整性和 V2 的两阶段分离架构。
 """
 import concurrent.futures
-import json
 import threading
 import time
 
 import logger
-from core.probe import slp_probe, auth_probe, active_fingerprint
+from core.probe import active_fingerprint, auth_probe, slp_probe
 from storage import db
-from .portscan import scan_ports, get_open_ports
-from .banner import parse_banner, extract_records
+
+from .banner import extract_records, parse_banner
+from .portscan import get_open_ports, scan_ports
 
 
 class ScanEngine:

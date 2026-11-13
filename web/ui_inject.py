@@ -3,6 +3,7 @@
 import gzip
 import hashlib
 import os
+
 from flask import Response, send_from_directory
 
 _PERSONA_JS = r"""

@@ -5,8 +5,8 @@
 
 吸收自 MCPTool 的 "登录后执行命令列表" 功能。
 """
-import time
 import re
+import time
 from dataclasses import dataclass, field
 from typing import Optional
 

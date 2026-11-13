@@ -4,14 +4,14 @@
 SLP 探测 + 认证检测单元测试。
 使用 Mock 服务器验证协议正确性。
 """
-import sys
 import os
+import sys
 import time
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.probe import slp_probe, auth_probe
+from core.probe import auth_probe, slp_probe
 from tests.mock_server import MockMCServer
 
 

@@ -1,18 +1,22 @@
 # -*- coding: utf-8 -*-
 """Routes: scan"""
-from flask import request, jsonify, Response
-import os
 import json
-import time
+import os
 import threading
+import time
 from datetime import datetime
-from storage import db, favorites
-from scanner.exclude import Excluder
-from scanner.targets import parse_targets
-from scanner.random_scan import random_scan, parse_port_ranges as _parse_random_port_ranges
+
+from flask import Response, jsonify, request
+
 from scanner.engine import ScanEngine
+from scanner.exclude import Excluder
+from scanner.random_scan import parse_port_ranges as _parse_random_port_ranges
+from scanner.random_scan import random_scan
+from scanner.targets import parse_targets
+from storage import db, favorites
+
 try:
-    from scanner.masscan import has_masscan, get_masscan_version, parse_masscan_json
+    from scanner.masscan import get_masscan_version, has_masscan, parse_masscan_json
 except ImportError:
     def has_masscan():
         return False
@@ -447,8 +451,9 @@ def register(app):
             return jsonify({"error": "请先选择要重新探查的服务器"}), 400
 
         _log(f"数据库重新探查开始: {len(targets)} 个目标")
-        from core.probe import slp_probe, auth_probe
         from concurrent.futures import ThreadPoolExecutor, as_completed
+
+        from core.probe import auth_probe, slp_probe
         results = []
 
         def probe_one(ip, port):

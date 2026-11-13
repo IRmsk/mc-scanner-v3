@@ -3,17 +3,17 @@
 """
 集成测试：目标解析、排除列表、端口扫描等模块的组合测试。
 """
-import sys
 import os
+import sys
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from scanner.targets import parse_targets, count_targets, parse_port_spec, deduplicate_targets
+from core.buffer import offline_uuid, read_string, read_varint, write_string, write_varint
+from core.protocol import get_chat_format, get_version_name
 from scanner.exclude import Excluder
 from scanner.portscan import check_port
-from core.buffer import write_varint, read_varint, write_string, read_string, offline_uuid
-from core.protocol import get_version_name, get_chat_format
+from scanner.targets import count_targets, deduplicate_targets, parse_port_spec, parse_targets
 
 
 class TestIntegration(unittest.TestCase):

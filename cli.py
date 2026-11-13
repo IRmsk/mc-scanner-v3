@@ -42,13 +42,12 @@ if os.path.isdir(_libs_dir):
 
 import config
 import logger
-
-from scanner.targets import parse_port_spec
-from scanner.portscan import get_open_ports
-from scanner.masscan import has_masscan
-from scanner.engine import ScanEngine
-from scanner.random_scan import random_scan, async_random_scan, parse_port_ranges
 from core.bot import MCBot
+from scanner.engine import ScanEngine
+from scanner.masscan import has_masscan
+from scanner.portscan import get_open_ports
+from scanner.random_scan import async_random_scan, parse_port_ranges, random_scan
+from scanner.targets import parse_port_spec
 
 
 def load_config(path: str = None) -> dict:
@@ -141,7 +140,7 @@ def cmd_portscan(args, cfg):
         print("[!] 公网使用极易触发IDS封禁和运营商限流。如确认请加 --yes 参数")
         return 2
     if not getattr(args, 'sync_mode', False):
-        from scanner.async_portscan import scan_ports_async, get_open_ports_async, has_uvloop
+        from scanner.async_portscan import get_open_ports_async, has_uvloop, scan_ports_async
         print(f"[*] 异步端口扫描（uvloop: {'启用' if has_uvloop() else '未安装'}）")
         # 异步路径原来直接用 parse_targets，绕过了排除表；统一走 service 过滤
         targets, _ = _filtered_targets(args, cfg, _resolve_ports(args, cfg))
@@ -273,8 +272,9 @@ def cmd_scan(args, cfg):
         run(args.db or cfg['db_path'], port=args.web)
     return 0 if results else 1
 def cmd_masscan(args, cfg):
-    from service import run_masscan_scan
     import ipaddress
+
+    from service import run_masscan_scan
     mode = args.mode or cfg.get('scan_mode') or 'balanced'
     # aggressive 模式门槛：与 cmd_portscan/cmd_scan 对齐，必须显式 --yes 确认
     if mode == 'aggressive' and not getattr(args, 'yes', False):
@@ -326,7 +326,7 @@ def cmd_import(args, cfg):
     logger.info(f"[*] 导入完成，共 {len(results)} 条记录")
     return 0
 def cmd_query(args, cfg):
-    from service import query_database, get_db_stats
+    from service import get_db_stats, query_database
     db_path = args.db or cfg['db_path']
     if not os.path.exists(db_path):
         logger.error(f"[!] 数据库不存在: {db_path}")
@@ -414,6 +414,7 @@ def cmd_random(args, cfg=None):
     start = time.time()
     if not getattr(args, 'sync_mode', False):
         import asyncio
+
         from scanner.async_portscan import has_uvloop
         if has_uvloop():
             import uvloop
@@ -764,7 +765,7 @@ def cmd_rcon(args, cfg):
 
 def cmd_commands(args, cfg):
     """登录后自动执行命令（v3.3 新增）"""
-    from core.command_runner import run_commands_on_server, CommandScript
+    from core.command_runner import CommandScript, run_commands_on_server
     caps = cfg.get("capabilities", {})
     if not (isinstance(caps, dict) and caps.get("rcon_commands", False)):
         print("[!] RCON/命令执行能力未启用：请在config中设置 capabilities.rcon_commands=true")
@@ -1002,8 +1003,9 @@ def main():
     # 初始化全局代理（如果proxies.txt存在且有代理，自动启用轮换）
     try:
         import os
-        from core.proxy import get_proxy_manager
+
         from core.conn import set_global_proxy_manager
+        from core.proxy import get_proxy_manager
         proxy_file = cfg.get("proxy_file", "proxies.txt")
         if os.path.exists(proxy_file):
             mgr = get_proxy_manager(proxy_file=proxy_file, auto_fetch=False)

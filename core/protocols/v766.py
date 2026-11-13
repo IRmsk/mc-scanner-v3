@@ -1,8 +1,20 @@
 """1.20.5-1.21.10（协议 766-773）协议处理器"""
 from __future__ import annotations
-import struct, time
+
+import struct
+import time
+
+from ..buffer import (
+    BytesStream,
+    read_boolean_from_stream,
+    read_string_from_stream,
+    read_uuid_from_stream,
+    read_varint_from_stream,
+    write_string,
+    write_uuid,
+    write_varint,
+)
 from .base import ProtocolHandler
-from ..buffer import write_string, write_varint, write_uuid, BytesStream, read_string_from_stream, read_varint_from_stream, read_boolean_from_stream, read_uuid_from_stream
 
 
 class Handler(ProtocolHandler):

@@ -10,12 +10,11 @@
 import argparse
 import json
 import os
+import shutil
 import sys
+import tempfile
 import urllib.request
 import zipfile
-import tempfile
-import shutil
-
 
 # 正常 minecraft-data zip 约 10-20MB；超过上限说明下载异常/被投毒，直接中止
 _MAX_DOWNLOAD_BYTES = 64 * 1024 * 1024

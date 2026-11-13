@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """Routes: ai_bots"""
-from flask import request, jsonify
+from flask import jsonify, request
+
 import config
+
 try:
     from web import state
 except ImportError:

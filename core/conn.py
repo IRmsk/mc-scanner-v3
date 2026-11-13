@@ -9,7 +9,8 @@ import struct
 import threading
 import time
 import zlib
-from .buffer import write_varint, read_varint_from_stream, write_string
+
+from .buffer import read_varint_from_stream, write_string, write_varint
 
 PROTO_STATE_HANDSHAKE = 0
 PROTO_STATE_STATUS = 1
@@ -141,8 +142,8 @@ class MCConnection:
         self._crypto_backend = None
         # 最高优先：cryptography库（OpenSSL绑定，和Java AES/CFB8/NoPadding完全一致）
         try:
-            from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
             from cryptography.hazmat.backends import default_backend
+            from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
             _cipher = Cipher(algorithms.AES(shared_secret), modes.CFB8(shared_secret), backend=default_backend())
             self._enc_cipher = _cipher.encryptor()
             self._dec_cipher = _cipher.decryptor()

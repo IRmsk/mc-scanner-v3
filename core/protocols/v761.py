@@ -2,9 +2,21 @@
 761-763: Login Start 有 hasPlayerUUID 字段
 764-765: Login Start 直接 UUID，有 Configuration 阶段"""
 from __future__ import annotations
-import struct, time
+
+import struct
+import time
+
+from ..buffer import (
+    BytesStream,
+    read_boolean_from_stream,
+    read_string_from_stream,
+    read_uuid_from_stream,
+    read_varint_from_stream,
+    write_string,
+    write_uuid,
+    write_varint,
+)
 from .base import ProtocolHandler
-from ..buffer import write_string, write_varint, write_uuid, BytesStream, read_string_from_stream, read_varint_from_stream, read_boolean_from_stream, read_uuid_from_stream
 
 
 class Handler(ProtocolHandler):

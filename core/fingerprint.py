@@ -7,7 +7,6 @@ bungeecord / velocity / node-minecraft-protocol / catserver / mohist / arclight 
 """
 import re
 
-
 # 已知服务端类型及匹配关键词
 SERVER_TYPE_PATTERNS = {
     "vanilla": [

@@ -2,8 +2,16 @@
 聊天包只有 message 字段（无 position/sender UUID）
 Player Info 用位掩码：add/gamemode/latency/display/remove"""
 from __future__ import annotations
+
+from ..buffer import (
+    BytesStream,
+    read_boolean_from_stream,
+    read_string_from_stream,
+    read_uuid_from_stream,
+    read_varint_from_stream,
+    write_string,
+)
 from .base import ProtocolHandler
-from ..buffer import write_string, BytesStream, read_string_from_stream, read_varint_from_stream, read_boolean_from_stream, read_uuid_from_stream
 
 
 class Handler(ProtocolHandler):

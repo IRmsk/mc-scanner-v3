@@ -9,14 +9,14 @@ import socket
 import time
 from dataclasses import dataclass, replace
 
-from scanner.safe import (get_profile, iter_shuffled_chunks,
-                             AdaptiveRateController, ScanProgressStore)
+from scanner.safe import AdaptiveRateController, ScanProgressStore, get_profile, iter_shuffled_chunks
 
 
 async def _open_connection(ip, port, timeout):
     """异步建立TCP连接，支持全局代理（有代理时走线程池+代理连接）。
     本地/私有地址（127/10/172.16/192.168）自动绕过代理直连。"""
     import ipaddress
+
     from core.conn import get_global_proxy
     proxy = get_global_proxy()
     # 本地/私有地址不走代理（否则会连到代理服务器的本地）
@@ -32,7 +32,7 @@ async def _open_connection(ip, port, timeout):
 
     # 有代理：在线程池里用同步socket建立代理连接，再包装成asyncio
     def _connect_via_proxy():
-        from core.conn import _connect_via_socks5, _connect_via_http
+        from core.conn import _connect_via_http, _connect_via_socks5
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             sock.settimeout(timeout)

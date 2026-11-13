@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 """Routes: observer"""
-from flask import request, jsonify, Response
-import os
 import json
-import time
+import os
 import threading
+import time
 from datetime import datetime
+
+from flask import Response, jsonify, request
+
 try:
     from web import state
 except ImportError:

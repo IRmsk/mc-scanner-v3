@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 """Routes: tools"""
-from flask import request, jsonify
 import os
 import sys
 import time
+
+from flask import jsonify, request
+
 import config
 from core.bot import MCBot
+
 try:
     from web import state
 except ImportError:
@@ -187,8 +190,8 @@ def register(app):
         if not host or not commands:
             return jsonify({"error": "host 和 commands 不能为空"}), 400
         try:
-            from core.command_runner import CommandScript, CommandRunner
             from core.bot import MCBot
+            from core.command_runner import CommandRunner, CommandScript
             script = CommandScript(delay=data.get("delay", 1.0))
             for cmd in commands:
                 script.add(cmd)

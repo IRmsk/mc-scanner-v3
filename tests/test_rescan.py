@@ -4,10 +4,10 @@
 v3.2.1 新增：智能重扫队列测试。
 验证重扫策略、到期检测、队列管理功能。
 """
-import sys
 import os
-import time
+import sys
 import tempfile
+import time
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """AuthMe 登录逻辑测试：验证三种模式（auto/login_only/register_then_login）的行为。"""
-import sys
 import os
+import sys
 import time
 from unittest.mock import MagicMock
 

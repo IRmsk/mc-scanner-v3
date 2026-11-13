@@ -2,8 +2,16 @@
 聊天包：message + position(Byte) + sender UUID(16)
 Player Info 改为枚举值：0=Add 1=GameMode 2=Latency 3=DisplayName 4=Remove"""
 from __future__ import annotations
+
+from ..buffer import (
+    BytesStream,
+    read_boolean_from_stream,
+    read_string_from_stream,
+    read_uuid_from_stream,
+    read_varint_from_stream,
+    write_string,
+)
 from .base import ProtocolHandler
-from ..buffer import write_string, BytesStream, read_string_from_stream, read_varint_from_stream, read_boolean_from_stream, read_uuid_from_stream
 
 
 class Handler(ProtocolHandler):

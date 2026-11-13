@@ -275,11 +275,18 @@ def get_config_packets(proto: int) -> dict | None:
     # 兜底：手写常量（仅当自动表无configuration段时使用）
     print(f"[packets] 警告: 协议 {proto} 自动表无Configuration段，回退手写常量（建议重新生成协议表）")
     from .protocol import (
-        CONFIG_CB_PLUGIN_MESSAGE, CONFIG_CB_FINISH_CONFIGURATION,
-        CONFIG_CB_KEEP_ALIVE, CONFIG_CB_PING, CONFIG_CB_DISCONNECT,
-        CONFIG_CB_KNOWN_PACKS, CONFIG_SB_CLIENT_INFORMATION,
-        CONFIG_SB_PLUGIN_MESSAGE, CONFIG_SB_FINISH_CONFIGURATION,
-        CONFIG_SB_KEEP_ALIVE, CONFIG_SB_PONG, CONFIG_SB_KNOWN_PACKS,
+        CONFIG_CB_DISCONNECT,
+        CONFIG_CB_FINISH_CONFIGURATION,
+        CONFIG_CB_KEEP_ALIVE,
+        CONFIG_CB_KNOWN_PACKS,
+        CONFIG_CB_PING,
+        CONFIG_CB_PLUGIN_MESSAGE,
+        CONFIG_SB_CLIENT_INFORMATION,
+        CONFIG_SB_FINISH_CONFIGURATION,
+        CONFIG_SB_KEEP_ALIVE,
+        CONFIG_SB_KNOWN_PACKS,
+        CONFIG_SB_PLUGIN_MESSAGE,
+        CONFIG_SB_PONG,
     )
     # 1.20.2~1.20.4（764/765）还没有 Cookie Request 包，Configuration 阶段的
     # clientbound/serverbound 包 ID 比 766+ 整体小 1（已用自动表逐项核对过：

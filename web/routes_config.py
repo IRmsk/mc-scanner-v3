@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 """Routes: config"""
-from flask import request, jsonify
 from datetime import datetime
+
+from flask import jsonify, request
+
 import config
 from core.bot import DEFAULT_WARNING_MESSAGES
+
 try:
     from web import state
 except ImportError:
@@ -254,7 +257,7 @@ def register(app):
 
     @app.route('/api/msa/start', methods=['POST'])
     def msa_start():
-        from core.microsoft_auth import start_device_code, CLIENT_ID
+        from core.microsoft_auth import CLIENT_ID, start_device_code
         data = request.get_json(silent=True) or {}
         cid = data.get("client_id", "") or CLIENT_ID
         try:
@@ -274,7 +277,7 @@ def register(app):
 
     @app.route('/api/msa/poll', methods=['GET', 'POST'])
     def msa_poll():
-        from core.microsoft_auth import poll_token, full_login_flow
+        from core.microsoft_auth import full_login_flow, poll_token
         # 支持POST传device_code，或GET用全局state
         device_code = None
         if request.method == 'POST':

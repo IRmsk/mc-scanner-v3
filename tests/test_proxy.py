@@ -4,14 +4,14 @@
 v3.3 新增：代理管理器测试。
 测试代理解析、管理器基本功能（不实际连接代理）。
 """
-import sys
 import os
+import sys
 import tempfile
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.proxy import Proxy, parse_proxy_line, ProxyManager
+from core.proxy import Proxy, ProxyManager, parse_proxy_line
 
 
 class TestProxy(unittest.TestCase):

@@ -3,9 +3,9 @@
 玩家历史追踪（v3.2.1 新增，融合 matscan 特性）。
 记录每个玩家在各服务器的出现/消失/次数，支持按玩家名或服务器查询。
 """
-from storage.db import get_conn
 from datetime import datetime, timezone
 
+from storage.db import get_conn
 
 PLAYER_HISTORY_SCHEMA = """
 CREATE TABLE IF NOT EXISTS player_history (

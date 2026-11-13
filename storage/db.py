@@ -4,12 +4,12 @@ SQLite 存储层。
 支持去重更新、按认证/模组/核心类型/搜索查询、统计。
 v3.1 新增：core_type、mods、forge_channels 字段（自动迁移旧数据库）。
 """
+import atexit
 import json
 import os
 import sqlite3
 import threading
-import atexit
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 
 import logger
 

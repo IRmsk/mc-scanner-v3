@@ -1,8 +1,11 @@
 """1.19（协议 759）协议处理器"""
 from __future__ import annotations
-import struct, time
+
+import struct
+import time
+
+from ..buffer import BytesStream, read_boolean_from_stream, read_string_from_stream, write_string, write_uuid
 from .base import ProtocolHandler
-from ..buffer import write_string, write_uuid, BytesStream, read_string_from_stream, read_boolean_from_stream
 
 
 class Handler(ProtocolHandler):

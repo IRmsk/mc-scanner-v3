@@ -411,8 +411,8 @@ PRESET_PERSONAS = [
 ]
 
 # ===== 人格热更新支持 =====
-import os
 import json
+import os
 import threading
 
 _PERSONAS_LOCK = threading.Lock()

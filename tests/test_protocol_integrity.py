@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 """协议表与版本映射完整性测试，防止回退和静默残缺"""
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.protocol import PROTOCOL_TO_VERSION, COMMON_PROTOCOLS
 from core.packets import get_play_packets
+from core.protocol import COMMON_PROTOCOLS, PROTOCOL_TO_VERSION
 
 
 class TestProtocolMapping:

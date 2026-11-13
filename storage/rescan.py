@@ -7,9 +7,9 @@
 - 正版/白名单服：2小时重扫
 - 新发现服务器：1分钟内快速确认（前5次）
 """
-from storage.db import get_conn
 import time
 
+from storage.db import get_conn
 
 RESCAN_QUEUE_SCHEMA = """
 CREATE TABLE IF NOT EXISTS rescan_queue (

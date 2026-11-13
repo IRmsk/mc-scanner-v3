@@ -1,7 +1,8 @@
 """协议处理器基类 — 每个版本继承并实现自己的格式"""
 from __future__ import annotations
-from typing import Optional
+
 import json
+from typing import Optional
 
 
 class ProtocolHandler:
@@ -107,8 +108,7 @@ class ProtocolHandler:
     def _sender_with_signature_layout(rest: bytes, fixed_sig: bool) -> str:
         """按指定签名布局解析剩余字节，解不出 chat.type.text 就返回空串。"""
         try:
-            from ..buffer import (BytesStream, read_varint_from_stream,
-                                  read_boolean_from_stream, read_string_from_stream)
+            from ..buffer import BytesStream, read_boolean_from_stream, read_string_from_stream, read_varint_from_stream
             s = BytesStream(rest)
             read_varint_from_stream(s)              # index
             if read_boolean_from_stream(s):         # hasSignature

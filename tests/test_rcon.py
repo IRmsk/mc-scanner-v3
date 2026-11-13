@@ -4,13 +4,13 @@
 v3.3 新增：RCON 客户端测试。
 测试 RCON 协议包构建和解析（不实际连接服务器）。
 """
-import sys
 import os
+import sys
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.rcon import RCONClient, RCONError, RCON_TYPE_COMMAND
+from core.rcon import RCON_TYPE_COMMAND, RCONClient, RCONError
 
 
 class TestRCONClient(unittest.TestCase):

@@ -5,9 +5,9 @@
 上层 engine 不需要写多套 if 判断适配不同扫描器。
 """
 import os
+import threading
 from abc import ABC, abstractmethod
 from typing import Iterator, Optional, Tuple
-import threading
 
 
 class BaseScanner(ABC):
@@ -36,7 +36,7 @@ class TCPPortScanner(BaseScanner):
     def scan(self, targets, ports=None, max_workers: int = 200,
              timeout: float = 3.0, rate: int = 0,
              stop_event: Optional[threading.Event] = None) -> Iterator[Tuple[str, int]]:
-        from .portscan import scan_ports, get_open_ports
+        from .portscan import get_open_ports, scan_ports
         from .targets import parse_targets
         # 将 targets(IP/网段列表) 与 ports 展开成 (ip, port) 对，再交给端口扫描
         port_list = ports or [25565]
@@ -57,7 +57,7 @@ class MasscanScanner(BaseScanner):
     def scan(self, targets, ports=None, max_workers: int = 200,
              timeout: float = 3.0, rate: int = 0,
              stop_event: Optional[threading.Event] = None) -> Iterator[Tuple[str, int]]:
-        from .masscan import has_masscan, run_masscan, parse_masscan_json
+        from .masscan import has_masscan, parse_masscan_json, run_masscan
         if not has_masscan():
             raise RuntimeError("masscan 未安装")
         targets_str = ",".join(str(t) for t in targets) if isinstance(targets, (list, tuple)) else str(targets)
@@ -85,7 +85,7 @@ class RandomScanner(BaseScanner):
     def scan(self, targets=None, ports=None, max_workers: int = 200,
              timeout: float = 3.0, rate: int = 0,
              stop_event: Optional[threading.Event] = None) -> Iterator[Tuple[str, int]]:
-        from .random_scan import random_scan, parse_port_ranges
+        from .random_scan import parse_port_ranges, random_scan
         port_ranges = parse_port_ranges(ports) if isinstance(ports, str) else (ports or [(25565, 25575)])
         open_ports = random_scan(self.target_count, max_workers, timeout, port_ranges,
                                   stop_event=stop_event)

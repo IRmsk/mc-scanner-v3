@@ -7,11 +7,10 @@ AI 内容生成模块。
 import ipaddress
 import json
 import socket
+import urllib.error
 import urllib.parse
 import urllib.request
-import urllib.error
 from typing import Optional
-
 
 # 预设生成模板
 PRESETS = {

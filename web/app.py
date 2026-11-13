@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """Web 控制面板（拆分路由版）。"""
-import os
-import sys
 import logging
+import os
 import secrets
-from flask import Flask, request, jsonify
+import sys
+
+from flask import Flask, jsonify, request
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import config
@@ -34,8 +35,9 @@ def _sw():
 
 
 # API限流：按IP+模块，滑动窗口60秒
-import time as _time
 import threading as _threading
+import time as _time
+
 _rate_limit_store = {}  # (ip, module) -> [timestamps]
 _rate_limit_lock = _threading.Lock()
 _RATE_WINDOW = 60.0  # 秒
@@ -234,8 +236,8 @@ def run(db_path: str = "mcscanner.db", port: int = 8080, host: str = "127.0.0.1"
     except Exception as e:
         logger.warning(f"[!] 旧记录清理失败: {e}")
     try:
-        from core.proxy import get_proxy_manager
         from core.conn import set_global_proxy_manager
+        from core.proxy import get_proxy_manager
         proxy_file = config.get("proxy_file", "proxies.txt")
         if os.path.exists(proxy_file):
             mgr = get_proxy_manager(proxy_file=proxy_file, auto_fetch=False)

@@ -3,16 +3,15 @@
 端口扫描：多线程 TCP 全连接扫描，支持限速、进度回调、停止。
 优化：分批提交任务，大网段不OOM；check_port用finally保证socket关闭。
 """
-import socket
-import time
-import threading
 import concurrent.futures
+import socket
+import threading
+import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, replace
 from typing import Optional
 
-from scanner.safe import (get_profile, iter_shuffled_chunks,
-                             AdaptiveRateController, ScanProgressStore)
+from scanner.safe import AdaptiveRateController, ScanProgressStore, get_profile, iter_shuffled_chunks
 
 # 疑似封禁时暂停投递的秒数（暂停期间继续收割在途任务，可被 stop_event 打断）
 BAN_PAUSE_SECONDS = 30.0

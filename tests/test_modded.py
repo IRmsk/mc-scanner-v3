@@ -7,10 +7,11 @@
 - 配置阶段插件消息（minecraft:brand 品牌回送）
 - auth_probe 在模组服上也能正确检测认证模式
 """
-import sys
 import os
+import sys
 import time
 import unittest
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from core.bot import MCBot, join_and_warn
 from core.probe import auth_probe

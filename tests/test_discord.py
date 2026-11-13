@@ -4,10 +4,10 @@
 v3.2.1 新增：Discord Webhook 通知测试。
 验证通知器的消息构建和冷却逻辑（不实际发送网络请求）。
 """
-import sys
 import os
+import sys
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 

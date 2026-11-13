@@ -6,8 +6,8 @@ Discord Webhook 通知（v3.2.1 新增，融合 matscan 特性）。
 """
 import json
 import time
-import urllib.request
 import urllib.error
+import urllib.request
 
 import logger
 

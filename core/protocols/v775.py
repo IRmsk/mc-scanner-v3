@@ -6,8 +6,15 @@
 - Player Info Update：action 由 varint 改为 u8 bitflags，并新增 update_hat / update_list_order 两位；
   update_listed 由 bool 改为 varint（详见 parse_player_info）"""
 from __future__ import annotations
+
+from ..buffer import (
+    BytesStream,
+    read_boolean_from_stream,
+    read_string_from_stream,
+    read_uuid_from_stream,
+    read_varint_from_stream,
+)
 from .v774 import Handler as V774Handler
-from ..buffer import BytesStream, read_varint_from_stream, read_string_from_stream, read_boolean_from_stream, read_uuid_from_stream
 
 
 class Handler(V774Handler):

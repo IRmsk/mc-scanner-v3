@@ -14,7 +14,7 @@ import threading
 import time
 
 try:
-    import fcntl            # POSIX 文件锁；Windows 下降级为进程内线程锁
+    import fcntl  # POSIX 文件锁；Windows 下降级为进程内线程锁
 except ImportError:         # pragma: no cover
     fcntl = None
 
