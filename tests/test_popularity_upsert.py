@@ -5,7 +5,6 @@ server_popularity 主键是 (ip, port, recorded_at)，而 recorded_at 只精确�
 同一秒内重复 upsert 同一台服务器（批量导入、多线程引擎回写、健康监控轮询）
 一定会撞主键：裸 INSERT 下 executemany 整体失败，一次冲突丢掉整批趋势数据。
 """
-import os
 import sqlite3
 
 import pytest

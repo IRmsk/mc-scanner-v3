@@ -3135,15 +3135,31 @@ async function startRandomScan() {
 
 function stopScan() { fetch('/api/scan/stop', {method: 'POST'}); }
 
+// 轮询每秒一次，DOM 只在内容真的变了才重绘。
+// textContent / innerHTML 即使赋相同值也会触发样式重算和 layout，
+// 一秒一次地全量重建任务列表和 100 行日志，纯属白烧 CPU。
+let _lastTaskSig = '';
+let _lastLogSig = '';
+let _lastPct = -1;
+
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el && el.textContent !== String(value)) el.textContent = value;
+}
+
 async function loadTaskList() {
   try {
     const r = await fetch('/api/scan/tasks');
     const d = await r.json();
     const box = document.getElementById('taskList');
     if (!box) return;
-    if (!d.tasks || !d.tasks.length) { box.innerHTML = '<div style="color:#8b98ab;padding:6px;font-size:12px;">暂无任务</div>'; return; }
+    const tasks = d.tasks || [];
+    const sig = JSON.stringify(tasks);
+    if (sig === _lastTaskSig) return;   // 数据没变，跳过整棵子树重建
+    _lastTaskSig = sig;
+    if (!tasks.length) { box.innerHTML = '<div style="color:#8b98ab;padding:6px;font-size:12px;">暂无任务</div>'; return; }
     const icons = {running: '🟢', queued: '⏳', done: '✅', stopped: '⏹', error: '❌'};
-    box.innerHTML = d.tasks.map(t => {
+    box.innerHTML = tasks.map(t => {
       const icon = icons[t.status] || '⚪';
       const right = t.status === 'running' ? `${t.scanned}/${t.total}` :
                     t.status === 'queued' ? `排队#${t.queue_position}` : t.status;
@@ -3171,15 +3187,27 @@ async function pollStatus() {
     document.getElementById('headerStatus').textContent = '错误: ' + data.error;
     document.getElementById('headerStatus').style.color = '#ef4444';
   }
-  document.getElementById('statTotal').textContent = (data.scanned || 0) + ' / ' + (data.total || 0);
-  document.getElementById('statUp').textContent = data.open_count || 0;
-  document.getElementById('statElapsed').textContent = Math.floor(data.elapsed || 0) + 's';
+  setText('statTotal', (data.scanned || 0) + ' / ' + (data.total || 0));
+  setText('statUp', data.open_count || 0);
+  setText('statElapsed', Math.floor(data.elapsed || 0) + 's');
   const pct = data.progress || 0;
-  document.getElementById('progressFill').style.width = pct + '%';
-  document.getElementById('progressFill').textContent = pct + '%';
+  const fill = document.getElementById('progressFill');
+  // 进度条只在百分比变化时改 style，避免每秒一次 style 失效重算
+  if (fill && pct !== _lastPct) {
+    _lastPct = pct;
+    fill.style.width = pct + '%';
+    fill.textContent = pct + '%';
+  }
   const logBox = document.getElementById('logBox');
-  logBox.innerHTML = (data.logs || []).map(l => `<div><span class="time">${escapeHtml(l.time)}</span>${escapeHtml(l.msg)}</div>`).join('');
-  logBox.scrollTop = logBox.scrollHeight;
+  const logs = data.logs || [];
+  // 日志是「最近 N 条」的滑动窗口，长度可能不变而内容在滚动，
+  // 所以用「长度 + 最后一条」做签名，够判断有没有新日志。
+  const logSig = logs.length + '|' + (logs.length ? logs[logs.length - 1].msg : '');
+  if (logSig !== _lastLogSig) {
+    _lastLogSig = logSig;
+    logBox.innerHTML = logs.map(l => `<div><span class="time">${escapeHtml(l.time)}</span>${escapeHtml(l.msg)}</div>`).join('');
+    logBox.scrollTop = logBox.scrollHeight;
+  }
   if (!data.running) {
     clearInterval(statusTimer);
     document.getElementById('btnStartScan').disabled = false;
