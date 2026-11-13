@@ -9,6 +9,8 @@ import json
 import os
 import re
 
+import pytest
+
 import config
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -64,3 +66,25 @@ def test_no_hardcoded_test_count():
                           ("README.en.md", r"Tests-\d+%20passing|(\d+) tests all passing")):
         assert not re.search(pattern, _read(name)), (
             f"{name} 里还有硬编码的测试数量，改成 CI 徽章或删掉")
+
+
+def test_protocol_data_is_tracked_by_git():
+    """协议表必须真的在版本控制里。
+
+    .gitignore 用「*.json 全忽略 + 白名单」兜住凭据文件，代价是新增的 json
+    资源会被静默忽略：本地测试全绿（磁盘上有文件），CI 上却 FileNotFoundError。
+    core/packets_auto.json 就这么漏过一次。
+    """
+    import subprocess
+
+    try:
+        r = subprocess.run(
+            ["git", "-C", _ROOT, "ls-files", "--error-unmatch", "core/packets_auto.json"],
+            capture_output=True, text=True, timeout=10)
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        pytest.skip("无 git 环境")
+    if "not a git repository" in (r.stderr or ""):
+        pytest.skip("非 git 工作区")
+    assert r.returncode == 0, (
+        "core/packets_auto.json 没进版本控制，CI 上会 FileNotFoundError"
+        "（检查 .gitignore 的白名单）")

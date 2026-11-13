@@ -69,6 +69,9 @@ rescan*.py
 !docs/**/*.json
 !tools/**/*.json
 !tests/**/*.json
+# 协议表是运行必需的数据文件（core/packets.py 直接读），不是运行期配置。
+# 曾因下面的 *.json 全忽略而没进仓库：本地测试全绿，CI 上 FileNotFoundError。
+!core/packets_auto.json
 *.txt
 !requirements.txt
 !targets.txt
