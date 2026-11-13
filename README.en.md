@@ -22,8 +22,8 @@ English | [中文](README.md)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![CI](https://github.com/IRmsk/mc-scanner-v3/actions/workflows/test.yml/badge.svg)](https://github.com/IRmsk/mc-scanner-v3/actions)
 [![License](https://img.shields.io/badge/License-GPL--3.0-00d992.svg)](LICENSE)
-[![Protocol](https://img.shields.io/badge/Protocol-41%20versions%20(340%2B)-10b981.svg)](#protocols)
-[![Tests](https://img.shields.io/badge/Tests-215%20passing-00d992.svg)](#tests)
+[![Protocol](https://img.shields.io/badge/Protocol-40%20versions%20(340%2B)-10b981.svg)](#protocols)
+[![Tests](https://img.shields.io/badge/tests-CI%20gated-00d992.svg)](#tests)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows%20%7C%20Termux-555555.svg)](#)
 
 **Port Scan · SLP Probe · Auth Detection · Observer · AI Bot · Security Scan · Web Panel**
@@ -466,7 +466,7 @@ mc-scanner-v3/
 python3 -m pytest tests/ -q
 ```
 
-Currently **215 tests all passing**, covering: protocol table integrity, version mapping, auth probing, Login Start segmentation, Client Settings segmentation, AuthMe branching, progress storage, AI safety guardrails, failure paths, no-reported-protocol fallback, etc.
+The test count is whatever CI reports — no hand-maintained number here. Coverage: protocol table integrity, version mapping, auth probing, Login Start segmentation, Client Settings segmentation, AuthMe branching, progress storage, AI safety guardrails, failure paths, no-reported-protocol fallback, etc.
 
 Regenerate protocol table:
 
@@ -635,7 +635,7 @@ This release is mostly bug fixes and cleanup, no new features.
 - Batch cooldown, adaptive throttle, connection anomaly detection, resume
 
 **Protocol foundation**
-- Protocol table auto-generated from minecraft-data (41 versions), integrity check before release
+- Protocol table auto-generated from minecraft-data (40 versions), integrity check before release
 - Version mapping calibrated and locked with unit tests
 - Configuration phase packet IDs from auto table
 

@@ -22,8 +22,8 @@
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![CI](https://github.com/IRmsk/mc-scanner-v3/actions/workflows/test.yml/badge.svg)](https://github.com/IRmsk/mc-scanner-v3/actions)
 [![License](https://img.shields.io/badge/License-GPL--3.0-00d992.svg)](LICENSE)
-[![Protocol](https://img.shields.io/badge/协议表-41%20版本%20(340%2B)-10b981.svg)](#协议与版本)
-[![Tests](https://img.shields.io/badge/测试-215%20通过-00d992.svg)](#测试)
+[![Protocol](https://img.shields.io/badge/协议表-40%20版本%20(340%2B)-10b981.svg)](#协议与版本)
+[![Tests](https://img.shields.io/badge/测试-CI%20门禁-00d992.svg)](#测试)
 [![Platform](https://img.shields.io/badge/平台-Linux%20%7C%20macOS%20%7C%20Windows%20%7C%20Termux-555555.svg)](#)
 
 **端口扫描 · SLP 探测 · 认证检测 · 观察者 · AI 托管 · 安全扫描 · Web 面板**
@@ -78,7 +78,7 @@
 |------|------|
 | 登录发消息 | 登录服务器发送自定义消息 |
 | AuthMe 支持 | `auto` / `login_only` / `register_then_login` 三种模式，按服务器反馈分支 |
-| 多版本适配 | 协议表由 minecraft-data 自动生成（41 个协议版本） |
+| 多版本适配 | 协议表由 minecraft-data 自动生成（40 个协议版本） |
 | 多机器人并发 | 单台上限可配置（`bot_threads`） |
 | 观察者模式 | 实时监控聊天、关键词处理、记录落盘、断线指数退避重连 |
 | 正版账号登录 | Microsoft 账号 OAuth 设备码流程，多账户管理 |
@@ -466,7 +466,7 @@ mc-scanner-v3/
 python3 -m pytest tests/ -q
 ```
 
-当前 **215 个测试全部通过**，覆盖：协议表完整性、版本映射、认证探测、Login Start分档、Client Settings分档、AuthMe分支、进度存储、AI安全护栏、失败路径、无报告协议回退等。
+测试通过数量以 CI 徽章为准（不在文档里手写数字），当前覆盖：协议表完整性、版本映射、认证探测、Login Start分档、Client Settings分档、AuthMe分支、进度存储、AI安全护栏、失败路径、无报告协议回退等。
 
 重新生成协议表：
 
