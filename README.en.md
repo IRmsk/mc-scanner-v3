@@ -13,11 +13,11 @@ English | [中文](README.md)
   ◆──────────────────────────────────────◆
 ```
 
-# 🛠️ MC Scanner v3.6.5
+# 📡 MC Scanner v3.6.5
 
 > The single source of truth for the version is `config.__version__`: CLI `--version`, the Web panel and the launcher scripts all read it. Bump it there only.
 
-### Minecraft Server Scanner · Probe · Observer · Security Alert
+### Check your own Minecraft server: offline mode? which ports are public? is RCON exposed?
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![CI](https://github.com/IRmsk/mc-scanner-v3/actions/workflows/test.yml/badge.svg)](https://github.com/IRmsk/mc-scanner-v3/actions)
@@ -26,9 +26,44 @@ English | [中文](README.md)
 [![Tests](https://img.shields.io/badge/tests-CI%20gated-00d992.svg)](#tests)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows%20%7C%20Termux-555555.svg)](#)
 
-**Port Scan · SLP Probe · Auth Detection · Observer · AI Bot · Security Scan · Web Panel**
+**Self-check · Inspection · Auth Detection · Observer · Web Panel**
 
 </div>
+
+---
+
+## ⚡ 30-Second Self-Check
+
+```bash
+pip install -r requirements.txt
+python cli.py scan play.example.com:25565
+```
+
+Real output (the CLI prints in Chinese by default; this is a local test server, unedited):
+
+```text
+[*] 发现 1 个 Minecraft 服务器:
+  127.0.0.1:25599 | 1.21.1(协议767) | 5/100人 | cracked | vanilla
+                                                  ^^^^^^^
+```
+
+`cracked` means **offline mode**: anyone can join with any username, and impersonate an admin.
+
+| 4th column | Meaning | What to do |
+|---|---|---|
+| `online` | Mojang auth required | fine |
+| `cracked` | **offline mode — anyone can join, anyone can be OP** | set `online-mode=true` in `server.properties` |
+| `whitelist` | whitelist on, can't get in | fine (this one is good news) |
+| `rejected` | connection refused | check the server log |
+
+### Two more worth confirming
+
+| What | Command | How to read it |
+|---|---|---|
+| Ports other than 25565 | `python cli.py portscan <YOUR_PUBLIC_IP> --port 1-65535` | every line is reachable from the internet |
+| Is RCON exposed | `python cli.py portscan <YOUR_PUBLIC_IP> --port 25575` | any hit = console reachable, set `rcon.password` or disable it |
+
+> All three commands touch only the single address you pass in. **Point them at your own server** — this is a self-check tool, not a way to find other people's servers.
 
 ---
 
@@ -36,7 +71,7 @@ English | [中文](README.md)
 
 | | | |
 |:---:|:---:|:---:|
-| [🧭 Introduction](#-introduction) | [✨ Features](#-features) | [🚦 Capabilities](#-capabilities-honest-assessment) |
+| [⚡ 30-Second Self-Check](#-30-second-self-check) | [🧭 Introduction](#-introduction) | [✨ Features](#-features) |
 | [🚀 Quick Start](#-quick-start) | [📖 Beginner's Guide](#-beginners-guide) | [🧩 Project Structure](#-project-structure) |
 | [🧪 Tests](#-tests) | [📜 Changelog](#-changelog) | [⚖️ Legal & Ethics](#️-legal--ethics) |
 
@@ -44,17 +79,21 @@ English | [中文](README.md)
 
 ## 🧭 Introduction
 
-**MC Scanner** is a pure-Python Minecraft server scanning and probing tool with both a **Web control panel** and **command-line** interface.
+**MC Scanner** is a pure-Python self-check and inspection tool for Minecraft servers, with both a command line and a **Web panel**. No Java, no game client needed.
 
 It can: scan network ranges for open ports, query server info via SLP (version / MOTD / player count / online players), detect auth mode (offline / online / whitelist), log in as a bot to send messages, monitor chat in real-time with an observer, and (experimental) host AI chat bots.
 
-> This project is a **fully-functional personal tool** positioned as "server inspection and security reminders within authorized scope." It is not a general-purpose Minecraft client, and unauthorized access is not encouraged.
+> Its default posture is **check your own**: point it at an address you are responsible for and see what it exposes.
+> Range scanning, the observer and join-and-warn are all still there — but those are what you use *after* you have authorization. See [Capabilities](#-capabilities-honest-assessment).
 
 ```text
-┌─ Typical Workflow ───────────────────────────────────────┐
-│  Port Scan  →  SLP Probe  →  Auth Detect  →  Observer / Alert  │
-│  (find ports)  (get info)    (offline/online)  (monitor / warn) │
-└──────────────────────────────────────────────────────────┘
+Self-check (default)
+  one address you own  →  SLP probe  →  auth mode  →  is it cracked?
+     your server         version/count   offline/online    that's the leak
+
+Inspection (after authorization)
+  CIDR range  →  bulk probe  →  observer / join-and-warn  →  Web panel
+   find targets   SLP + auth       continuous watch          manage / export
 ```
 
 ---
@@ -116,8 +155,10 @@ It can: scan network ranges for open ports, query server info via SLP (version /
 
 ### 🌐 Web Panel
 
-- Access at `http://127.0.0.1:8090` after startup
-- **No login auth**: Binds to `127.0.0.1` by default for local use; if bound to `0.0.0.0`, **anyone on the network can operate it — ensure your network is trusted**
+- Access at `http://127.0.0.1:8080` after startup
+- **Login required**: first launch uses `admin` / `admin123` and **forces a password change** before you can operate anything; sessions last 7 days and live in browser localStorage
+- **The page shell is public, every data endpoint needs a token**: `/api/*` requires `X-API-Token` (session token, or `web_token` from config); scripts may also pass `?token=`
+- Before binding `0.0.0.0`, set `web_token` or change the default password — otherwise anyone on your network can log in
 - Dark theme, **desktop / mobile responsive**
 - One-stop management: scan tasks, observers, AI bots, premium accounts, database, favorites, player history
 - Capability status badges always visible at top
@@ -181,7 +222,7 @@ link exists. Install from source instead:
 
 ```bash
 pip install -r requirements.txt
-python3 cli.py web --port 8090
+python3 cli.py web --port 8080
 ```
 
 Windows users can double-click `run.bat`; it installs dependencies from `requirements.txt`.
@@ -189,8 +230,8 @@ Windows users can double-click `run.bat`; it installs dependencies from `require
 ### Start Web Panel
 
 ```bash
-python3 cli.py web --port 8090 --host 127.0.0.1
-# Open http://127.0.0.1:8090 in browser
+python3 cli.py web --port 8080 --host 127.0.0.1
+# Open http://127.0.0.1:8080 in browser
 ```
 
 ### Command-line Scan
@@ -270,12 +311,12 @@ pip install flask pycryptodome
 ### 3. First Run
 
 ```bash
-python3 cli.py web --port 8090 --host 127.0.0.1
+python3 cli.py web --port 8080 --host 127.0.0.1
 ```
 
-Open `http://127.0.0.1:8090` — you'll see the dark panel. Bottom nav: Scan, Results, Favorites, Observer, AI, Auto, Library, History.
+Open `http://127.0.0.1:8080` — you'll see the dark panel. Bottom nav: Scan, Results, Favorites, Observer, AI, Auto, Library, History.
 
-> **Termux/mobile users**: Run the command in Termux, then open `http://127.0.0.1:8090` in your phone browser. Panel is mobile-optimized.
+> **Termux/mobile users**: Run the command in Termux, then open `http://127.0.0.1:8080` in your phone browser. Panel is mobile-optimized.
 
 ### 4. Your First Scan
 
