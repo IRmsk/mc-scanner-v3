@@ -115,6 +115,24 @@ def destroy_session(token: str):
         _sessions.pop(token, None)
 
 
+def fixed_token() -> str:
+    """配置里的固定 token（config.web_token / MC_WEB_TOKEN）。
+
+    给脚本、CLI 和外部调用方用：它们没有登录会话，但可以带这个长期 token。
+    返回空字符串表示未启用固定 token。
+    """
+    try:
+        import config as _cfg
+        return str(_cfg.get("web_token", "") or "").strip()
+    except Exception:
+        return ""
+
+
+def must_change_pending() -> bool:
+    """默认账号是否还没改过密码（must_change=True 时后端会拒绝非 auth 接口）。"""
+    return bool(load_account().get("must_change"))
+
+
 def change_account(new_username: str, new_password: str) -> bool:
     """更新账号用户名和密码（must_change 置 False），原子写盘。"""
     account = load_account()

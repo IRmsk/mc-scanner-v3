@@ -2320,7 +2320,23 @@ function setAuthToken(t) {
 
 window.fetch = function(url, opts) {
   opts = opts || {};
-  return _origFetch(url, opts);
+  // 登录会话 token 优先；没有会话时用后端注入的固定 token（config.web_token）
+  const _t = getAuthToken() || window.__WEB_TOKEN__ || '';
+  if (_t) {
+    if (typeof Headers !== 'undefined' && opts.headers instanceof Headers) {
+      opts.headers.set('X-API-Token', _t);
+    } else {
+      opts.headers = Object.assign({}, opts.headers || {}, {'X-API-Token': _t});
+    }
+  }
+  return _origFetch(url, opts).then(function(res) {
+    // 会话过期：清掉本地 token 并弹回登录框（auth 接口自身的 401 交给登录逻辑处理）
+    if (res.status === 401 && String(url).indexOf('/api/auth/') !== 0) {
+      setAuthToken('');
+      showAuthOverlay('login');
+    }
+    return res;
+  });
 };
 
 function showAuthOverlay(mode) {

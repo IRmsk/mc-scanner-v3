@@ -3,6 +3,7 @@
 import os
 import sys
 import logging
+import secrets
 from flask import Flask, request, jsonify
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -86,10 +87,59 @@ def _rate_limit():
     return None
 
 
+# 无需鉴权的路径：页面壳、静态资源、登录入口。
+# 页面本身只是空壳，数据全部在 /api/ 后面，所以放行 HTML 不泄露任何状态。
+_PUBLIC_PATHS = frozenset({
+    "/", "/index.html", "/favicon.ico",
+    "/manifest.json", "/sw.js",
+    "/api/auth/login", "/api/auth/status",
+})
+_PUBLIC_PREFIXES = ("/static/",)
+
+
+def _extract_token():
+    """按 头 > 查询参数 > 请求体 的顺序取 token。"""
+    token = request.headers.get("X-API-Token", "")
+    if not token:
+        token = request.args.get("token", "")
+    if not token and request.method in ("POST", "PUT", "PATCH"):
+        body = request.get_json(silent=True)
+        if isinstance(body, dict) and isinstance(body.get("token"), str):
+            token = body["token"]
+    return token.strip() if isinstance(token, str) else ""
+
+
 @app.before_request
 def _check_auth():
-    """鉴权已移除：本工具绑 127.0.0.1 本地使用，不再要求登录。"""
-    return None
+    """token 鉴权：/api/* 需要登录会话，或配置的固定 token（web_token / MC_WEB_TOKEN）。
+
+    两种情况都通过：
+      1. 前端登录拿到的会话 token（X-API-Token，7 天有效）
+      2. config.web_token / MC_WEB_TOKEN 配置的固定 token（给脚本和 CLI 用）
+    """
+    path = request.path
+    if not path.startswith("/api/"):
+        return None
+    if path in _PUBLIC_PATHS or path.startswith(_PUBLIC_PREFIXES):
+        return None
+
+    from web import auth as _auth
+    token = _extract_token()
+
+    username = _auth.verify_session(token)
+    if username:
+        # 默认账号未改密时只放行 auth 接口，否则"强制改密"只是前端弹窗
+        if _auth.must_change_pending() and not path.startswith("/api/auth/"):
+            return jsonify({"error": "请先修改默认账号密码", "must_change": True}), 403
+        request.environ["mc.username"] = username
+        return None
+
+    fixed = _auth.fixed_token()
+    if fixed and token and secrets.compare_digest(token, fixed):
+        request.environ["mc.username"] = "web_token"
+        return None
+
+    return jsonify({"error": "未登录或会话已过期", "need_login": True}), 401
 
 
 @app.before_request
