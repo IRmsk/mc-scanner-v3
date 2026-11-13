@@ -4,7 +4,7 @@
 协议包 ID 表自动生成器。
 从官方 PrismarineJS/minecraft-data 生成，杜绝手抄错误。
 用法:
-  python tools/gen_packets.py --data ./minecraft-data --output core/packets_auto.py
+  python tools/gen_packets.py --data ./minecraft-data --output core/packets_auto.json
   python tools/gen_packets.py --download  # 自动下载 minecraft-data
 """
 import argparse
@@ -19,7 +19,7 @@ import zipfile
 # 正常 minecraft-data zip 约 10-20MB；超过上限说明下载异常/被投毒，直接中止
 _MAX_DOWNLOAD_BYTES = 64 * 1024 * 1024
 # 生成结果自检门槛：低于此值几乎必定是结构变化或下载损坏，
-# 宁可拒绝写盘，也不能用近乎空表覆盖 core/packets_auto.py
+# 宁可拒绝写盘，也不能用近乎空表覆盖 core/packets_auto.json
 _MIN_PROTOCOLS = 8
 _MIN_PLAY_SB = 10
 
@@ -142,24 +142,18 @@ def generate_auto_tables(data_dir: str, output_path: str):
             print(f"    - {p}")
         return False
 
-    content = f'''# -*- coding: utf-8 -*-
-"""
-自动生成的协议包 ID 表（从官方 minecraft-data）。
-生成时间: {__import__('datetime').datetime.now().isoformat()}
-协议版本数: {len(proto_to_packets)}
-不要手动编辑此文件，运行 python tools/gen_packets.py --download 重新生成。
-"""
-
-PACKET_TABLES_AUTO = {json.dumps(proto_to_packets, ensure_ascii=False, indent=2)}
-'''
+    # 纯数据就存纯数据：41 个版本 / 149KB，放 JSON 而不是 .py，
+    # 免得解释器每次 import 都去解析几千行字典字面量。
+    content = json.dumps(proto_to_packets, ensure_ascii=False, separators=(',', ':'), sort_keys=True)
+    print(f"[*] 生成时间: {__import__('datetime').datetime.now().isoformat()}")
     # 先写临时文件并做语法校验，再备份旧文件后原子替换
     tmp_path = output_path + ".tmp"
     with open(tmp_path, 'w', encoding='utf-8') as f:
         f.write(content)
     try:
-        compile(content, tmp_path, 'exec')
-    except SyntaxError as e:
-        print(f"[!] 生成内容语法检查失败: {e}")
+        json.loads(content)
+    except json.JSONDecodeError as e:
+        print(f"[!] 生成内容 JSON 校验失败: {e}")
         os.unlink(tmp_path)
         return False
     if os.path.exists(output_path):
@@ -173,7 +167,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data", help="minecraft-data 本地路径")
     parser.add_argument("--download", action="store_true")
-    parser.add_argument("--output", default="core/packets_auto.py")
+    parser.add_argument("--output", default="core/packets_auto.json")
     args = parser.parse_args()
 
     data_dir = args.data

@@ -419,7 +419,7 @@ mc-scanner-v3/
 │   ├── probe.py            # SLP / auth probing
 │   ├── protocol.py         # Version mapping / protocol constants
 │   ├── packets.py          # Protocol table loading & integrity check
-│   ├── packets_auto.py     # Auto-generated protocol table (41 versions)
+│   ├── packets_auto.json   # Auto-generated protocol table (40 versions, pure data)
 │   ├── microsoft_auth.py   # Microsoft OAuth premium login
 │   ├── ed25519.py          # Pure-Python Ed25519 signing (zero deps)
 │   ├── errors.py           # Unified error codes & mapping

@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 多版本 Play 阶段包 ID 表管理。
-支持自动生成表（packets_auto.py）优先，回退到手写表。
+支持自动生成表（packets_auto.json）优先，回退到手写表。
 """
+import json
+import os
 import threading
 
 from .protocol import get_chat_format
@@ -102,12 +104,27 @@ _PLAY_TABLES = [
 ]
 
 _auto_tables = None
+_auto_raw = None          # 原始嵌套表：configuration 阶段要用，转换后的 play 表拿不到
 _auto_loaded = False
 _auto_lock = threading.Lock()
 
+# 协议表是纯数据（41 个版本 / 149KB），放 JSON 而不是 .py：
+# 避免每次 import 都让解释器解析 8401 行字典字面量，也不再污染 diff。
+_AUTO_TABLE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "packets_auto.json")
+
+
+def _load_raw_auto_tables():
+    """读取原始自动表；只读一次，常驻内存。"""
+    global _auto_raw
+    if _auto_raw is not None:
+        return _auto_raw
+    with open(_AUTO_TABLE_PATH, "r", encoding="utf-8") as f:
+        _auto_raw = json.load(f)
+    return _auto_raw
+
 
 def _load_auto_tables():
-    """尝试加载 packets_auto.py 生成的协议表。
+    """尝试加载 packets_auto.json 生成的协议表。
     双检锁：原实现先把 _auto_loaded 置 True 再加载，并发扫描时其他线程会在
     窗口期看到 _auto_loaded=True 但 _auto_tables 仍是 None，从而误判"该版本不可用"。"""
     global _auto_tables, _auto_loaded
@@ -125,14 +142,14 @@ def _load_auto_tables_locked():
     """真正的加载逻辑，调用方必须已持有 _auto_lock。"""
     global _auto_tables
     try:
-        from .packets_auto import PACKET_TABLES_AUTO
+        raw_tables = _load_raw_auto_tables()
         auto_play = {}
-        for proto_str, stages in PACKET_TABLES_AUTO.items():
+        for proto_str, stages in raw_tables.items():
             try:
                 proto = int(proto_str)
             except (ValueError, TypeError):
                 continue
-            # 生成物里混进了 "1073741839" 这种伪造键（packets_auto.py:7933）。
+            # 生成物里混进了 "1073741839" 这种伪造键（旧 packets_auto.py 第 7933 行）。
             # 它会让"回退到 <= proto 的最大版本"逻辑把一个垃圾表当成正常版本使用，
             # 所以这里只接受合理范围内的协议号（MC 协议号现在是 340~776）。
             if not (1 <= proto <= 9999):
@@ -185,8 +202,8 @@ def _load_auto_tables_locked():
                 _warned += 1
         if _warned:
             print(f"[packets] 共 {_warned} 个常用协议存在字段缺失，建议重新生成协议表")
-    except ImportError:
-        # packets_auto.py 不存在（可选扩展），使用手写表
+    except FileNotFoundError:
+        # packets_auto.json 不存在（可选扩展），使用手写表
         pass
     except Exception as e:
         print(f"[packets] 自动协议表加载失败，回退手写表: {e}")
@@ -246,8 +263,7 @@ def get_config_packets(proto: int) -> dict | None:
         return None
     # 优先从自动表获取（唯一真相源）
     try:
-        from .packets_auto import PACKET_TABLES_AUTO
-        table = PACKET_TABLES_AUTO.get(str(proto), {})
+        table = _load_raw_auto_tables().get(str(proto), {})
         cfg = table.get("configuration", {})
         cb = cfg.get("toClient", {})
         sb = cfg.get("toServer", {})

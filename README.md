@@ -419,7 +419,7 @@ mc-scanner-v3/
 │   ├── probe.py            # SLP / 认证探测
 │   ├── protocol.py         # 版本映射 / 协议常量
 │   ├── packets.py          # 协议表加载与完整性校验
-│   ├── packets_auto.py     # 自动生成协议表（41 版本）
+│   ├── packets_auto.json   # 自动生成协议表（40 版本，纯数据）
 │   ├── microsoft_auth.py   # Microsoft OAuth 正版登录
 │   ├── ed25519.py          # 纯Python Ed25519签名（零外部依赖）
 │   ├── errors.py           # 统一错误码与映射
