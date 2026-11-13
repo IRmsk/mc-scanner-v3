@@ -33,6 +33,10 @@
   "ai_api_key": "",
   "ai_base_url": "https://api.deepseek.com/v1",
   "ai_model": "deepseek-chat",
+  "ai_api_keys": [],
+  "ai_max_tokens": 1024,
+  "ai_request_timeout": 180,
+  "ai_allow_insecure": false,
   "ai_reply_cooldown": 2.0,
   "email_enabled": false,
   "email_smtp_host": "",
@@ -63,11 +67,5 @@
   "on_ban_suspect": "pause",
   "api_rate_limit": 600,
   "db_retention_days": 30,
-  "max_concurrent_scans": 2,
-  "capabilities": {
-    "scan": true,
-    "login_interact": false,
-    "rcon_commands": false,
-    "public_scan": false
-  }
+  "max_concurrent_scans": 2
 }
