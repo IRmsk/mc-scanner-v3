@@ -60,3 +60,16 @@ def test_index_plain_when_client_rejects_gzip(client):
     r = client.get("/", headers={"Accept-Encoding": "identity"})
     assert r.headers.get("Content-Encoding") is None
     assert b"<html" in r.get_data().lower()
+
+
+def test_index_never_embeds_web_token(client, monkeypatch):
+    """页面壳是免鉴权的，绝不能把固定 token 写进 HTML。
+
+    原实现在 </head> 前注入 window.__WEB_TOKEN__，一旦绑定 0.0.0.0，
+    任何人 GET / 就能读到固定 token 并接管面板。
+    """
+    import config as cfg
+    secret = "tok-should-not-appear-9f3a"
+    monkeypatch.setattr(cfg, "get", lambda k, d=None: secret if k == "web_token" else d)
+    body = client.get("/").get_data()
+    assert secret.encode() not in body

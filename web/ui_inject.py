@@ -110,7 +110,7 @@ _NAV = r"""
 
 
 # serve_index 每次请求都要读 260KB 的 index.html 并做多次全文替换，这里缓存预处理结果；
-# 缓存键包含 web_token，保证运行时改配置后仍会重新注入（不改变原有注入行为）
+# 缓存键只跟文件修改时间走：页面不再注入 web_token（见下方说明）
 _index_cache = {"key": None, "html": None, "gzip_body": None, "etag": None}
 
 
@@ -156,14 +156,10 @@ def serve_index(web_dir: str):
         return send_from_directory(web_dir, "index.html")
     polish_mtime = os.path.getmtime(polish_path) if os.path.isfile(polish_path) else 0
 
-    # 注入web_token（如果配置了），供前端fetch自动带X-API-Token
-    try:
-        import config as _cfg
-        _token = _cfg.get("web_token", "")
-    except Exception:
-        _token = ""
-
-    cache_key = (html_mtime, polish_mtime, _token)
+    # 不再把 web_token 注入页面。原设计想省掉手动登录，但页面壳是免鉴权的：
+    # 一旦绑定 0.0.0.0，任何人 GET / 就能从 HTML 里读到固定 token 并接管面板。
+    # 固定 token 只走 X-API-Token 头给脚本用，浏览器侧一律走登录会话。
+    cache_key = (html_mtime, polish_mtime)
     etag = '"%s"' % hashlib.sha256(repr(cache_key).encode("utf-8")).hexdigest()[:32]
     if _index_cache["key"] == cache_key and _index_cache["html"] is not None:
         return _make_response(_index_cache["html"], etag)
@@ -194,14 +190,6 @@ def serve_index(web_dir: str):
     if "upgradePersonaUI" not in html:
         if "</html>" in html:
             html = html.replace("</html>", _PERSONA_JS + "\n</html>", 1)
-
-    # web_token 注入行为保持原样（仅把 token 纳入缓存键，改配置后仍会重新生成）
-    if _token:
-        _inject = f'<script>window.__WEB_TOKEN__ = "{_token}";</script>'
-        if "</head>" in html:
-            html = html.replace("</head>", _inject + "</head>", 1)
-        else:
-            html = _inject + html
 
     _index_cache["key"] = cache_key
     _index_cache["html"] = html
