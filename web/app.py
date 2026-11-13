@@ -172,7 +172,7 @@ def _register_routes():
     modules = [
         "auth", "routes_core", "routes_scan", "routes_scan_extra",
         "routes_data", "routes_ai", "routes_ai_bots", "routes_observer",
-        "routes_config", "routes_ops", "routes_tools", "routes_warn",
+        "routes_config", "routes_ops", "routes_tools", "routes_warn", "routes_events",
     ]
     for name in modules:
         if __package__:
