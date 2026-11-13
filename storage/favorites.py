@@ -11,7 +11,8 @@ import threading
 from datetime import datetime
 from typing import Optional
 
-from core.probe import auth_probe, slp_probe
+# core.probe 会把 core.protocol/core.packets 整条链拖起来，
+# 而收藏的增删改查根本用不到探测：延迟到 rescan 真正要发包时再导入。
 
 # 可重入锁：读-改-写整段加锁，避免健康监控线程与 Web 操作并发丢更新
 _LOCK = threading.RLock()
@@ -215,6 +216,8 @@ def update_from_probe(ip: str, port: int, info: dict, path: str = None,
 def rescan_one(ip: str, port: int, timeout: float = 5.0, path: str = None) -> Optional[dict]:
     """重新探测单个收藏服务器，更新 last_info 和 last_check。
     离线时保留上次在线信息（last_good_info）。"""
+    from core.probe import auth_probe, slp_probe
+
     info = slp_probe(ip, port, timeout=timeout)
     if not info or info.get("state") != "up":
         info = {"state": "offline", "error": info.get("error", "") if info else "unreachable"}
@@ -246,6 +249,8 @@ def rescan_all(timeout: float = 5.0, workers: int = 10, path: str = None,
         return []
     results = {}
     def _probe_with_auth(ip, port):
+        from core.probe import auth_probe, slp_probe
+
         info = slp_probe(ip, port, timeout=timeout)
         if info and info.get("state") == "up":
             try:

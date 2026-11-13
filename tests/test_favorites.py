@@ -146,8 +146,10 @@ class TestFavoritesRobustness(unittest.TestCase):
             time.sleep(0.6)
             return {"state": "up", "version": "1.20"}
 
-        with patch.object(favorites, "slp_probe", slow_probe), \
-             patch.object(favorites, "auth_probe", lambda *a, **k: None):
+        # probe 已改成函数内延迟导入，桩要打在源头 core.probe 上
+        from core import probe as probe_mod
+        with patch.object(probe_mod, "slp_probe", slow_probe), \
+             patch.object(probe_mod, "auth_probe", lambda *a, **k: None):
             t = threading.Thread(
                 target=lambda: favorites.rescan_all(timeout=0.1, workers=1, path=self.path))
             t.start()

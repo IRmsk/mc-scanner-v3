@@ -8,22 +8,10 @@ from datetime import datetime
 
 from flask import Response, jsonify, request
 
-from scanner.engine import ScanEngine
-from scanner.exclude import Excluder
-from scanner.random_scan import parse_port_ranges as _parse_random_port_ranges
-from scanner.random_scan import random_scan
-from scanner.targets import parse_targets
 from storage import db, favorites
 
-try:
-    from scanner.masscan import get_masscan_version, has_masscan, parse_masscan_json
-except ImportError:
-    def has_masscan():
-        return False
-    def get_masscan_version():
-        return None
-    def parse_masscan_json(*a, **kw):
-        return []
+# 扫描器相关模块刻意延迟导入：scanner.* 会拖起 core.probe → core.protocol 整条链，
+# 冷启动实测多 400ms 以上，而多数请求（状态轮询、配置、收藏）根本用不到它们。
 try:
     from web import state
 except ImportError:
@@ -125,6 +113,9 @@ def register(app):
         ports = parse_ports_spec(data.get("ports", [25565]))
         if not ports:
             return jsonify({"error": "端口格式无效，请输入如 25565 或 25565-25575"}), 400
+        from scanner.exclude import Excluder
+        from scanner.targets import parse_targets
+
         exclude_file = _safe_exclude_file(data.get("exclude_file"))
         excluder = Excluder(exclude_file)
         try:
@@ -191,6 +182,9 @@ def register(app):
         do_probe = data.get("probe", True)
 
         def _random_worker():
+            from scanner.engine import ScanEngine
+            from scanner.random_scan import parse_port_ranges as _parse_random_port_ranges
+            from scanner.random_scan import random_scan
             try:
                 with scan_lock:
                     scan_state["task_id"] = task_id
@@ -396,6 +390,9 @@ def register(app):
         f = request.files['file']
         if not f.filename:
             return jsonify({"error": "文件名为空"}), 400
+        from scanner.engine import ScanEngine
+        from scanner.masscan import parse_masscan_json
+
         do_auth = request.form.get('do_auth', '1') == '1'
         import tempfile
         fd, tmp_path = tempfile.mkstemp(suffix='.ndjson', prefix='import_')
@@ -427,6 +424,7 @@ def register(app):
 
     @app.route('/api/masscan/status')
     def masscan_status():
+        from scanner.masscan import get_masscan_version, has_masscan
         return jsonify({
             "available": has_masscan(),
             "version": get_masscan_version() or "unknown",

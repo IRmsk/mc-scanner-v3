@@ -7,7 +7,8 @@ import time
 from flask import jsonify, request
 
 import config
-from core.bot import MCBot
+
+# core.bot 是 1200+ 行的协议实现，只有真正进服发命令时才需要。
 
 try:
     from web import state
@@ -64,6 +65,8 @@ def register(app):
         if not ip or not command:
             return jsonify({"error": "IP 和命令不能为空"}), 400
         try:
+            from core.bot import MCBot
+
             bot = MCBot(host=ip, port=port, username=username)
             bot.connect()
             if authme_password:
