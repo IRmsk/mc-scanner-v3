@@ -4,6 +4,8 @@ import threading
 
 from flask import jsonify
 
+import logger
+
 try:
     from web import state
 except ImportError:
@@ -26,6 +28,7 @@ def register(app):
         try:
             from services_health import _health_monitor_loop  # type: ignore
         except Exception:
+            logger.exception("[api] parse_ports_spec 未处理异常")
             _health_monitor_loop = None
 
 
@@ -82,4 +85,3 @@ def register(app):
         import os
         threading.Timer(0.5, lambda: os._exit(0)).start()
         return jsonify({"success": True, "msg": "正在关闭..."})
-

@@ -2,6 +2,8 @@
 """Routes: scan_extra"""
 from flask import jsonify, request
 
+import logger
+
 try:
     from web import state
 except ImportError:
@@ -76,6 +78,7 @@ def register(app):
                 r = engine.probe_one(item["ip"], item["port"])
                 results.append(r)
             except Exception:
+                logger.exception("[api] rescan_run 未处理异常")
                 continue
         up = sum(1 for r in results if r.get("state") == "up")
         _log(f"智能重扫完成: {len(results)} 个目标, {up} 个在线")
@@ -161,4 +164,3 @@ def register(app):
         tid = request.args.get("task_id")
         from core.auto_scanner import auto_scanner
         return jsonify({"logs": auto_scanner.get_logs(tid)})
-

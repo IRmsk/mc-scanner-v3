@@ -3,6 +3,8 @@
 import html
 import os
 
+import logger
+
 try:
     from web import state
 except ImportError:
@@ -62,7 +64,7 @@ def register(app):
             <script>setTimeout(function(){{window.location.href='/'}}, 2000);</script>
             </body></html>"""
         except Exception as e:
+            logger.exception("[api] auth_response 未处理异常")
             import traceback
             traceback.print_exc()
             return f"<html><body style='font-family:sans-serif;text-align:center;padding-top:50px;'><h2>登录异常</h2><p>{html.escape(str(e))}</p><p>可以关闭此页面返回APP</p></body></html>"
-

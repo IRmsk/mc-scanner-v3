@@ -86,5 +86,10 @@ def error(msg: str, *args, **kwargs):
     get_logger().error(msg, *args, **kwargs)
 
 
+def exception(msg: str, *args, **kwargs):
+    """在 except 块里用：自动带上异常堆栈，比只打一行 error 有用得多。"""
+    get_logger().exception(msg, *args, **kwargs)
+
+
 def debug(msg: str, *args, **kwargs):
     get_logger().debug(msg, *args, **kwargs)

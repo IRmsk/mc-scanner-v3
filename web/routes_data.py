@@ -8,6 +8,7 @@ from datetime import datetime
 
 from flask import Response, jsonify, request
 
+import logger
 from storage import db, favorites
 
 try:
@@ -260,7 +261,7 @@ def register(app):
                     from storage.favorites import rescan_one
                     rescan_one(ip, port, timeout=5.0)
                 except Exception:
-                    pass
+                    logger.exception("[api] _auto_probe 未处理异常")
             threading.Thread(target=_auto_probe, daemon=True).start()
         return jsonify({"success": True, "favorite": fav})
 
@@ -284,7 +285,7 @@ def register(app):
                 if favorites.remove_favorite(it["ip"], int(it["port"])):
                     removed += 1
             except Exception:
-                pass
+                logger.exception("[api] fav_batch_remove 未处理异常")
         _log(f"批量删除收藏: {removed}/{len(items)} 个")
         return jsonify({"success": True, "removed": removed})
 
@@ -445,6 +446,7 @@ def register(app):
             from storage.favorites import filter_favorites
             favs = filter_favorites()
         except Exception:
+            logger.exception("[api] favorites_realtime 未处理异常")
             favs = []
         result = []
         # 持锁快照：健康监控线程会在同一字典里删/写，无锁遍历会抛 RuntimeError 变 500
@@ -549,8 +551,8 @@ def register(app):
             _log(f"数据库导入: {count} 条记录")
             return jsonify({"success": True, "imported": count})
         except Exception as e:
+            logger.exception("[api] db_import 未处理异常")
             return jsonify({"error": str(e)}), 500
         finally:
             if os.path.exists(tmp_path):
                 os.remove(tmp_path)
-

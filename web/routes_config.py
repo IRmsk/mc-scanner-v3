@@ -5,6 +5,7 @@ from datetime import datetime
 from flask import jsonify, request
 
 import config
+import logger
 from core.bot import DEFAULT_WARNING_MESSAGES
 
 try:
@@ -34,7 +35,7 @@ def register(app):
             try:
                 config.save_config()
             except Exception:
-                pass
+                logger.exception("[api] _msa_accounts 未处理异常")
         return accounts
 
     def _msa_save_account(name, uuid, access_token, refresh_token=None):
@@ -69,7 +70,7 @@ def register(app):
         try:
             config.save_config()
         except Exception:
-            pass
+            logger.exception("[api] _msa_save_account 未处理异常")
 
     def _msa_active_account():
         """获取当前活跃的正版账户"""
@@ -271,6 +272,7 @@ def register(app):
             return jsonify({"success": True, "user_code": r["user_code"],
                             "verification_uri": r["verification_uri"], "interval": r["interval"]})
         except Exception as e:
+            logger.exception("[api] msa_start 未处理异常")
             import traceback
             traceback.print_exc()
             return jsonify({"success": False, "error": str(e)})
@@ -302,6 +304,7 @@ def register(app):
             _msa_state["step"] = "done"
             return jsonify({"success": True, "name": result["name"], "uuid": result["uuid"]})
         except Exception as e:
+            logger.exception("[api] msa_poll 未处理异常")
             import traceback
             traceback.print_exc()
             return jsonify({"success": False, "error": str(e), "waiting": True})
@@ -334,6 +337,7 @@ def register(app):
                 "expires_in": r.get("expires_in", 900),
             })
         except Exception as e:
+            logger.exception("[api] msa_fcl_device_start 未处理异常")
             import traceback
             traceback.print_exc()
             return jsonify({"success": False, "error": str(e)})
@@ -365,6 +369,7 @@ def register(app):
             else:
                 return jsonify({"success": False, "waiting": True, "message": r.get("error_description", str(r))})
         except Exception as e:
+            logger.exception("[api] msa_fcl_device_poll 未处理异常")
             import traceback
             traceback.print_exc()
             return jsonify({"success": False, "error": str(e), "waiting": True})
@@ -412,7 +417,7 @@ def register(app):
         try:
             config.save_config()
         except Exception:
-            pass
+            logger.exception("[api] msa_set_active 未处理异常")
         return jsonify({"success": True})
 
     @app.route('/api/msa/accounts/<uuid>', methods=['DELETE'])
@@ -442,7 +447,7 @@ def register(app):
         try:
             config.save_config()
         except Exception:
-            pass
+            logger.exception("[api] msa_delete_account 未处理异常")
         return jsonify({"success": True})
 
     @app.route('/api/msa/auth_url', methods=['GET'])
@@ -474,6 +479,7 @@ def register(app):
             _msa_save_account(result["name"], result["uuid"], result["access_token"], refresh_token)
             return jsonify({"success": True, "name": result["name"]})
         except Exception as e:
+            logger.exception("[api] msa_exchange 未处理异常")
             return jsonify({"success": False, "error": str(e)})
 
     @app.route('/api/msa/token', methods=['POST'])
@@ -489,6 +495,7 @@ def register(app):
             _msa_save_account(result["name"], result["uuid"], result["access_token"])
             return jsonify({"success": True, "name": result["name"]})
         except Exception as e:
+            logger.exception("[api] msa_token 未处理异常")
             import traceback
             traceback.print_exc()
             return jsonify({"success": False, "error": str(e)})
@@ -518,7 +525,7 @@ def register(app):
             _msa_save_account(result["name"], result["uuid"], result["access_token"])
             return jsonify({"success": True, "name": result["name"], "uuid": result["uuid"]})
         except Exception as e:
+            logger.exception("[api] msa_manual 未处理异常")
             import traceback
             traceback.print_exc()
             return jsonify({"success": False, "error": str(e)})
-

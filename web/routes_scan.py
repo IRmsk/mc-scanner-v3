@@ -8,6 +8,7 @@ from datetime import datetime
 
 from flask import Response, jsonify, request
 
+import logger
 from storage import db, favorites
 
 # 扫描器相关模块刻意延迟导入：scanner.* 会拖起 core.probe → core.protocol 整条链，
@@ -121,6 +122,7 @@ def register(app):
         try:
             parsed_raw = list(parse_targets(targets_list, ports))
         except Exception as e:
+            logger.exception("[api] start_scan 未处理异常")
             return jsonify({"error": f"目标解析失败: {e}"}), 400
         parsed = list(excluder.filter_targets(parsed_raw))
         if not parsed:
@@ -417,6 +419,7 @@ def register(app):
             _log(f"导入完成，共 {len(results)} 个服务器")
             return jsonify({"status": "ok", "count": len(results)})
         except Exception as e:
+            logger.exception("[api] import_masscan_results 未处理异常")
             return jsonify({"error": str(e)}), 500
         finally:
             if os.path.exists(tmp_path):
@@ -468,7 +471,7 @@ def register(app):
                     r["last_updated"] = int(time.time())
                     return r
             except Exception:
-                pass
+                logger.exception("[api] probe_one 未处理异常")
             return None
 
         with ThreadPoolExecutor(max_workers=workers) as ex:
@@ -504,4 +507,3 @@ def register(app):
         port = int(data.get("port") or 25565)
         info = favorites.rescan_one(ip, port, timeout=_to_float(data.get("timeout"), 5.0))
         return jsonify({"success": True, "info": info})
-

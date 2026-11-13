@@ -8,6 +8,8 @@ from datetime import datetime
 
 from flask import Response, jsonify, request
 
+import logger
+
 try:
     from web import state
 except ImportError:
@@ -115,7 +117,7 @@ def register(app):
                             'saved_at': data.get('saved_at', ''),
                         })
                     except Exception:
-                        pass
+                        logger.exception("[api] observer_history 未处理异常")
         return jsonify({"total": len(logs), "sessions": logs[:200]})
 
     @app.route('/api/observer/history/delete', methods=['POST'])
@@ -166,7 +168,7 @@ def register(app):
                 s.stop()
                 stopped += 1
             except Exception:
-                pass
+                logger.exception("[api] observer_stop_all 未处理异常")
         _log(f"一键停止全部观察者: {stopped}个")
         return jsonify({"success": True, "stopped": stopped})
 
@@ -236,6 +238,7 @@ def register(app):
                                 username = rec.get("observer", "unknown")
                     _log(f"从实时jsonl导出 {len(messages)} 条")
                 except Exception as e:
+                    logger.exception("[api] observer_export 未处理异常")
                     return jsonify({"error": f"读取实时记录失败: {e}"}), 500
             elif os.path.exists(json_file):
                 # 3. 从结束快照读
@@ -247,6 +250,7 @@ def register(app):
                     port = data.get('port', 0)
                     username = data.get('username', 'unknown')
                 except Exception as e:
+                    logger.exception("[api] observer_export 未处理异常")
                     return jsonify({"error": f"读取记录失败: {e}"}), 500
             else:
                 return jsonify({"error": "会话不存在或已过期"}), 404
@@ -287,4 +291,3 @@ def register(app):
             txt = "\n".join(lines)
             return Response(txt, mimetype="text/plain; charset=utf-8",
                             headers={"Content-Disposition": f"attachment; filename=observer_{host}_{port}_{int(time.time())}.txt"})
-

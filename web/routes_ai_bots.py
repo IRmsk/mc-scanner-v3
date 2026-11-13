@@ -3,6 +3,7 @@
 from flask import jsonify, request
 
 import config
+import logger
 
 try:
     from web import state
@@ -174,6 +175,7 @@ def register(app):
         try:
             from core.ai_personas import PRESET_PERSONAS
         except Exception:
+            logger.exception("[api] ai_multi_personas 未处理异常")
             from core.ai_bot import PRESET_PERSONAS
         out = []
         for p in PRESET_PERSONAS:
@@ -199,6 +201,7 @@ def register(app):
             n = ai_memory.clear_all_memory()
             return jsonify({"success": True, "cleared_count": n})
         except Exception as e:
+            logger.exception("[api] ai_memory_clear 未处理异常")
             return jsonify({"success": False, "error": str(e)}), 500
 
     @app.route('/api/assistant/chat', methods=['POST'])
@@ -211,4 +214,3 @@ def register(app):
 
         reply = _handle_assistant_command(msg)
         return jsonify({"reply": reply})
-

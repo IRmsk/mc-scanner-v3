@@ -7,6 +7,7 @@ import time
 from flask import jsonify, request
 
 import config
+import logger
 
 # core.bot 是 1200+ 行的协议实现，只有真正进服发命令时才需要。
 
@@ -89,6 +90,7 @@ def register(app):
             return jsonify({"success": True, "command": cmd, "auth_mode": auth_mode,
                             "state": bot_state, "hold": hold, "chat": chat_responses[-10:]})
         except Exception as e:
+            logger.exception("[api] bot_command 未处理异常")
             return jsonify({"success": False, "error": str(e)})
 
     @app.route('/api/tools/gen_packets', methods=['POST'])
@@ -100,6 +102,7 @@ def register(app):
                 gp.main()
             return jsonify({"success": True, "message": "协议表生成完成"})
         except Exception as e:
+            logger.exception("[api] gen_packets 未处理异常")
             return jsonify({"success": False, "error": str(e)}), 500
 
     @app.route('/api/proxy')
@@ -151,6 +154,7 @@ def register(app):
             result = rcon_execute(host, port, password, command, timeout=data.get("timeout", 10.0))
             return jsonify({"success": True, "command": command, "response": result})
         except Exception as e:
+            logger.exception("[api] rcon_execute_api 未处理异常")
             return jsonify({"success": False, "error": str(e)[:200]})
 
     @app.route('/api/plugins/capture', methods=['POST'])
@@ -179,6 +183,7 @@ def register(app):
                 "raw_text": str(intel.raw_responses)[:500],
             })
         except Exception as e:
+            logger.exception("[api] plugins_capture 未处理异常")
             return jsonify({"success": False, "error": str(e)[:200]})
 
     @app.route('/api/commands/run', methods=['POST'])
@@ -212,5 +217,5 @@ def register(app):
                 "summary": runner.get_summary(),
             })
         except Exception as e:
+            logger.exception("[api] commands_run 未处理异常")
             return jsonify({"success": False, "error": str(e)[:200]})
-

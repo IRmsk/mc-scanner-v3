@@ -85,7 +85,7 @@ def _rate_limit():
                 return jsonify({"error": f"请求过于频繁，{module}模块限{limit}次/分钟"}), 429
             _rate_limit_store[key].append(now)
     except Exception:
-        pass
+        logger.exception("[api] _rate_limit 未处理异常")
     return None
 
 
@@ -161,10 +161,10 @@ def _audit_log():
                 elif data.get("username"):
                     target = f" user={data['username']}"
             except Exception:
-                pass
+                logger.exception("[api] _audit_log 未处理异常")
             logger.info(f"[审计] {ip} {request.method} {request.path}{target}")
     except Exception:
-        pass
+        logger.exception("[api] _audit_log 未处理异常")
     return None
 
 
