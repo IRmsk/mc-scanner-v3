@@ -23,4 +23,7 @@ pysimdjson==7.0.2                          # SIMD JSON 解析加速
 
 # === 开发/测试 / Dev & Testing ===
 pytest>=7.0.0
+# 测试并行：259 个用例从 ~40s 降到 ~20s（loadscope 保证同模块顺序不变，
+# 避免跨模块的全局状态被拆散到不同 worker）
+pytest-xdist>=3.0.0
 ruff>=0.1.0

@@ -32,4 +32,6 @@ jobs:
 
     - name: Run tests
       run: |
-        python -m pytest tests/ -v --tb=short
+        # --dist loadscope：同一个测试模块固定落在同一个 worker，模块内执行顺序不变。
+        # 项目里有 web/state、config 这类模块级单例，按用例打散会互相污染。
+        python -m pytest tests/ -v --tb=short -n auto --dist loadscope
