@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Routes: scan"""
+import ipaddress
 import json
 import os
 import threading
@@ -18,14 +19,26 @@ try:
 except ImportError:
     import state  # type: ignore
 
+# 显式列出私有/回环/链路本地网段，不用 is_private：
+# Python 3.10 的 ipaddress 把 0.0.0.0/0 也算成 is_private=True（3.11 才修正），
+# 靠它判断会让「全网扫描」在 3.10 上被当成内网巡检直接放行。
+_PRIVATE_NETWORKS = tuple(
+    ipaddress.ip_network(n) for n in (
+        "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16",
+        "127.0.0.0/8", "169.254.0.0/16",
+        "::1/128", "fc00::/7", "fe80::/10",
+    )
+)
+
+
 def _targets_all_private(targets) -> bool:
     """目标是否全部落在私有 / 回环 / 链路本地网段。
 
     用途：给 masscan 放行内网巡检（自有资产），公网大网段必须显式开启
     capabilities.public_scan——README 写的「未授权全网扫描 禁止」得有条代码守着。
-    主机名等无法解析成网段的输入按"非私有"处理，宁可多要求一次开关。
+    主机名等无法解析成网段的输入按"非私有"处理，宁可多要求一次开关；
+    比私有段更大的网段（如 0.0.0.0/0、10.0.0.0/7）同样按公网处理。
     """
-    import ipaddress
     for raw in targets:
         token = str(raw).strip()
         if not token:
@@ -34,7 +47,8 @@ def _targets_all_private(targets) -> bool:
             net = ipaddress.ip_network(token, strict=False)
         except ValueError:
             return False
-        if not (net.is_private or net.is_loopback or net.is_link_local):
+        same_version = [p for p in _PRIVATE_NETWORKS if p.version == net.version]
+        if not any(net == p or net.subnet_of(p) for p in same_version):
             return False
     return True
 
