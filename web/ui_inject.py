@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """运行时注入 UI 增强样式、移动端底栏、人格卡片选择。"""
+import gzip
+import hashlib
 import os
 from flask import Response, send_from_directory
 
@@ -108,7 +110,40 @@ _NAV = r"""
 
 # serve_index 每次请求都要读 260KB 的 index.html 并做多次全文替换，这里缓存预处理结果；
 # 缓存键包含 web_token，保证运行时改配置后仍会重新注入（不改变原有注入行为）
-_index_cache = {"key": None, "html": None}
+_index_cache = {"key": None, "html": None, "gzip_body": None, "etag": None}
+
+
+def _make_response(body: str, etag: str):
+    """统一出站：ETag 协商 + gzip。
+
+    index.html 是 276KB 单文件，原来每次刷新全量裸传、无缓存协商、无压缩；
+    Flask 不会自动压缩 Response(...) 构造出来的对象，也不给它加 ETag。
+    """
+    from flask import request as _req
+
+    inm = _req.headers.get("If-None-Match", "") or ""
+    if etag and etag in [t.strip() for t in inm.split(",") if t.strip()]:
+        resp = Response(status=304)
+        resp.headers["ETag"] = etag
+        resp.headers["Cache-Control"] = "no-cache"
+        return resp
+
+    accepts_gzip = "gzip" in (_req.headers.get("Accept-Encoding", "") or "").lower()
+    if accepts_gzip and len(body) > 1024:
+        payload = _index_cache.get("gzip_body")
+        if payload is None:
+            payload = gzip.compress(body.encode("utf-8"), 6)
+            _index_cache["gzip_body"] = payload
+        resp = Response(payload, mimetype="text/html; charset=utf-8")
+        resp.headers["Content-Encoding"] = "gzip"
+        resp.headers["Vary"] = "Accept-Encoding"
+    else:
+        resp = Response(body, mimetype="text/html; charset=utf-8")
+
+    resp.headers["ETag"] = etag
+    # no-cache 不是不缓存：允许本地留存，但每次必须带 If-None-Match 回来验证
+    resp.headers["Cache-Control"] = "no-cache"
+    return resp
 
 
 def serve_index(web_dir: str):
@@ -128,8 +163,9 @@ def serve_index(web_dir: str):
         _token = ""
 
     cache_key = (html_mtime, polish_mtime, _token)
+    etag = '"%s"' % hashlib.sha256(repr(cache_key).encode("utf-8")).hexdigest()[:32]
     if _index_cache["key"] == cache_key and _index_cache["html"] is not None:
-        return Response(_index_cache["html"], mimetype="text/html; charset=utf-8")
+        return _make_response(_index_cache["html"], etag)
 
     try:
         with open(html_path, "r", encoding="utf-8") as f:
@@ -168,4 +204,6 @@ def serve_index(web_dir: str):
 
     _index_cache["key"] = cache_key
     _index_cache["html"] = html
-    return Response(html, mimetype="text/html; charset=utf-8")
+    _index_cache["gzip_body"] = None      # 内容变了，压缩结果一并失效
+    _index_cache["etag"] = etag
+    return _make_response(html, etag)
