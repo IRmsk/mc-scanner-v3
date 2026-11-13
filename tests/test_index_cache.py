@@ -73,3 +73,24 @@ def test_index_never_embeds_web_token(client, monkeypatch):
     monkeypatch.setattr(cfg, "get", lambda k, d=None: secret if k == "web_token" else d)
     body = client.get("/").get_data()
     assert secret.encode() not in body
+
+
+def test_boot_auth_asks_backend_instead_of_assuming_login():
+    """首屏必须真去问 /api/auth/status。
+
+    鉴权恢复之后，页面里还留着「鉴权已移除，不再检查登录状态」的启动逻辑，
+    无条件 hideAuthOverlay()：未登录用户直接看到空面板，靠后续 API 挨个 401
+    才把登录框弹出来（还会闪一下）。这条断言防止它被改回去。
+    """
+    import pathlib
+    import re
+
+    root = pathlib.Path(__file__).resolve().parent.parent
+    html = (root / "web" / "index.html").read_text(encoding="utf-8")
+    m = re.search(r"bootAuth[\s\S]{0,900}", html)
+    assert m, "找不到 bootAuth 启动逻辑"
+    body = m.group(0)
+    assert "/api/auth/status" in body, "bootAuth 没有询问后端登录状态"
+    assert "logged_in" in body, "bootAuth 没有依据 logged_in 决定显示登录框"
+    # 用完整原句，避免把解释性注释里的引用也算成残留
+    assert "鉴权已移除：本地工具，不再检查登录状态" not in html, "残留过期的「鉴权已移除」注释"

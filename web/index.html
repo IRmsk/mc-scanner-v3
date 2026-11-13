@@ -2417,9 +2417,27 @@ async function logoutAccount() {
   showAuthOverlay('login');
 }
 
-// 鉴权已移除：本地工具，不再检查登录状态
+// 首屏必须先问后端登录状态。
+// 原实现无条件 hideAuthOverlay()，注释还写着「鉴权已移除：本地工具」——
+// 鉴权恢复后这就成了漏洞的另一半：未登录用户直接看到空面板，
+// 只有等并发的 API 请求逐个 401 才会把登录框弹出来（而且会闪一下）。
 (async function bootAuth() {
-  hideAuthOverlay();
+  let status = null;
+  try {
+    const res = await fetch('/api/auth/status');
+    status = await res.json().catch(() => null);
+    if (!res.ok) status = { logged_in: false };
+  } catch (e) {
+    showAuthOverlay('login');
+    return;
+  }
+  if (status && status.logged_in) {
+    hideAuthOverlay();
+    if (status.must_change) showAuthOverlay('change');
+  } else {
+    setAuthToken('');
+    showAuthOverlay('login');
+  }
 })();
 
 // ===== 安全/能力状态：常显徽章 + 未授权禁用按钮 =====
@@ -2550,25 +2568,7 @@ function toast(msg, type) {
 // 兼容旧alert调用：关键操作改用toast
 const _origAlert = window.alert;
 // 统一API错误提示
-async function apiFetch(url, options) {
-  try {
-    const res = await fetch(url, options);
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      const msg = data.error || data.message || ('请求失败 ' + res.status);
-      toast(msg, 'error');
-      return { ok: false, error: msg, data };
-    }
-    if (data.error) {
-      toast(data.error, 'error');
-      return { ok: false, error: data.error, data };
-    }
-    return { ok: true, data };
-  } catch (e) {
-    toast('网络错误: ' + e.message, 'error');
-    return { ok: false, error: e.message, data: {} };
-  }
-}
+
 
 // ===== AI助手浮窗 =====
 let assistantOpen = false;

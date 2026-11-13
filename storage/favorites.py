@@ -24,20 +24,22 @@ def _default_path() -> str:
 
 
 def load_favorites(path: str = None) -> list:
-    """加载收藏列表，返回 [{ip, port, tags, note, added_at, last_check, last_info}, ...]"""
+    """加载收藏列表，返回 [{ip, port, tags, note, added_at, last_check, last_info}, ...]
+
+    不再先 os.path.exists()：那是多余的一次 stat，文件不存在直接让 open 抛
+    FileNotFoundError 更省事。在 /sdcard 这类 FUSE 上单次 stat 就要 1-2ms。
+    """
     path = path or _default_path()
-    if not os.path.exists(path):
-        return []
     try:
         with open(path, 'r', encoding='utf-8') as f:
             data = json.load(f)
-        if isinstance(data, list):
-            return data
-        if isinstance(data, dict) and "favorites" in data:
-            return data["favorites"]
-        return []
     except (json.JSONDecodeError, OSError):
         return []
+    if isinstance(data, list):
+        return data
+    if isinstance(data, dict) and "favorites" in data:
+        return data["favorites"]
+    return []
 
 
 def _write_atomic(favorites: list, path: str):
@@ -417,9 +419,13 @@ def import_from_file(filepath: str, path: str = None) -> int:
     return count
 
 
-def get_all_tags(path: str = None) -> list:
-    """获取所有标签（去重排序）。"""
-    favorites = load_favorites(path)
+def get_all_tags(path: str = None, favs: list = None) -> list:
+    """获取所有标签（去重排序）。
+
+    favs：调用方已经加载好的收藏列表。同一个请求里既要筛选又要标签时传进来，
+    免得多读一遍磁盘。
+    """
+    favorites = favs if favs is not None else load_favorites(path)
     tags = set()
     for fav in favorites:
         for t in fav.get("tags", []):
@@ -427,9 +433,10 @@ def get_all_tags(path: str = None) -> list:
     return sorted(tags)
 
 
-def filter_favorites(tag: str = None, search: str = None, path: str = None) -> list:
-    """按标签或关键词筛选收藏。"""
-    favorites = load_favorites(path)
+def filter_favorites(tag: str = None, search: str = None, path: str = None,
+                     favs: list = None) -> list:
+    """按标签或关键词筛选收藏。favs 语义同 get_all_tags。"""
+    favorites = favs if favs is not None else load_favorites(path)
     result = []
     for fav in favorites:
         if tag and tag not in fav.get("tags", []):

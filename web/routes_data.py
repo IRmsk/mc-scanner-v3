@@ -238,8 +238,10 @@ def register(app):
     def fav_list():
         tag = request.args.get("tag")
         search = request.args.get("search", "")
-        favs = favorites.filter_favorites(tag=tag or None, search=search or None)
-        return jsonify({"total": len(favs), "favorites": favs, "tags": favorites.get_all_tags()})
+        # 读一次盘，筛选和标签统计共用：原实现每请求 load_favorites 两遍
+        raw = favorites.load_favorites()
+        favs = favorites.filter_favorites(tag=tag or None, search=search or None, favs=raw)
+        return jsonify({"total": len(favs), "favorites": favs, "tags": favorites.get_all_tags(favs=raw)})
 
     @app.route('/api/favorites/add', methods=['POST'])
     def fav_add():
