@@ -25,6 +25,27 @@ try:
 except ImportError:
     import state  # type: ignore
 
+def _targets_all_private(targets) -> bool:
+    """目标是否全部落在私有 / 回环 / 链路本地网段。
+
+    用途：给 masscan 放行内网巡检（自有资产），公网大网段必须显式开启
+    capabilities.public_scan——README 写的「未授权全网扫描 禁止」得有条代码守着。
+    主机名等无法解析成网段的输入按"非私有"处理，宁可多要求一次开关。
+    """
+    import ipaddress
+    for raw in targets:
+        token = str(raw).strip()
+        if not token:
+            continue
+        try:
+            net = ipaddress.ip_network(token, strict=False)
+        except ValueError:
+            return False
+        if not (net.is_private or net.is_loopback or net.is_link_local):
+            return False
+    return True
+
+
 def _html_escape(s):
     if s is None:
         return ""
@@ -87,6 +108,15 @@ def register(app):
         if not targets_str:
             return jsonify({"error": "请输入目标"}), 400
         targets_list = list(targets_str.split(','))
+        # masscan 是唯一能一口气扫 0.0.0.0/0 的通道，公网目标必须显式开启开关。
+        # 拦截放在 parse_targets 之前：0.0.0.0/0 真展开会吃光内存。
+        use_masscan = str(data.get("use_masscan", "auto")).strip().lower() not in (
+            "false", "0", "no", "off", "")
+        if use_masscan and not _targets_all_private(targets_list):
+            if not state.capability_enabled("public_scan"):
+                return jsonify({
+                    "error": "公网 masscan 扫描需要开启 capabilities.public_scan"
+                             "（内网目标不受限）"}), 403
         continuous = data.get("continuous", False)
         ports = parse_ports_spec(data.get("ports", [25565]))
         if not ports:
@@ -132,6 +162,12 @@ def register(app):
             return jsonify({"error": "只读模式下禁止扫描"}), 403
         if not state.capability_enabled("scan"):
             return jsonify({"error": "扫描能力未启用，请在config中设置 capabilities.scan=true"}), 403
+        # 随机扫描的目标由随机数决定，无法自证为自有资产：必须显式开启 public_scan。
+        # 原实现只查了 scan（默认 true），于是这条注释成了空话。
+        if not state.capability_enabled("public_scan"):
+            return jsonify({
+                "error": "公网随机扫描能力未启用，请在config中设置 capabilities.public_scan=true"
+            }), 403
         data = request.json or {}
         # 持锁快照：另一线程正在 start_scan_task 里插入键时无锁遍历 values()
         # 会抛 RuntimeError: dictionary changed size during iteration → 500
