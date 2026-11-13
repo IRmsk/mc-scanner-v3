@@ -1144,6 +1144,7 @@ tbody tr:hover { background: rgba(0,217,146,0.04) !important; }
     <div class="cap-badges" id="capBadges"></div>
     <div class="status-pill" id="headerStatus">就绪</div>
     <button class="topbar-icon-btn" onclick="shutdownServer()" title="关闭服务" style="color:#e94560;">⏻</button>
+    <button class="topbar-icon-btn" id="btnLogout" onclick="logoutAccount()" title="退出登录" style="display:none;">⏏</button>
     <button class="topbar-icon-btn" onclick="switchTab('settings')" title="设置">⚙️</button>
   </div>
 </header>
@@ -2412,8 +2413,11 @@ async function doChangeAccount() {
 }
 
 async function logoutAccount() {
+  // 服务端销毁会话（destroy_session），不只是前端扔掉 token
   try { await fetch('/api/auth/logout', {method: 'POST'}); } catch(e) {}
   setAuthToken('');
+  const lo = document.getElementById('btnLogout');
+  if (lo) lo.style.display = 'none';
   showAuthOverlay('login');
 }
 
@@ -2433,6 +2437,8 @@ async function logoutAccount() {
   }
   if (status && status.logged_in) {
     hideAuthOverlay();
+    const lo = document.getElementById('btnLogout');
+    if (lo) lo.style.display = '';
     if (status.must_change) showAuthOverlay('change');
   } else {
     setAuthToken('');
