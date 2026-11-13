@@ -139,3 +139,22 @@ def test_broken_payload_does_not_kill_stream(client, token, monkeypatch):
         assert chunk is not None and chunk.startswith(":")
     finally:
         r.close()
+
+
+def test_frontend_prefers_sse_and_keeps_polling_as_fallback():
+    """前端必须优先走 SSE，轮询只作为兜底保留一处。
+
+    同时守住那个容易被改回去的细节：扫描「刚结束」的副作用（跳结果页）
+    只能由 running 的下降沿触发一次，不能每帧都跳。
+    """
+    import pathlib
+
+    root = pathlib.Path(__file__).resolve().parent.parent
+    html = (root / "web" / "index.html").read_text(encoding="utf-8")
+
+    assert "/api/events" in html
+    assert "new EventSource(" in html, "前端没有建立 SSE 连接"
+    assert html.count("setInterval(pollStatus") == 1, "轮询只应保留 startPolling 里这一处兜底"
+    # 下降沿守卫
+    assert "_wasRunning" in html, "缺少 running 下降沿标记，扫描结束会重复触发跳转"
+    assert "if (_wasRunning && !data.running)" in html

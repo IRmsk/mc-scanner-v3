@@ -2416,6 +2416,8 @@ async function logoutAccount() {
   // 服务端销毁会话（destroy_session），不只是前端扔掉 token
   try { await fetch('/api/auth/logout', {method: 'POST'}); } catch(e) {}
   setAuthToken('');
+  stopStatusStream();            // 断开推送，别拿着已失效的 token 反复重连
+  if (statusTimer) { clearInterval(statusTimer); statusTimer = null; }
   const lo = document.getElementById('btnLogout');
   if (lo) lo.style.display = 'none';
   showAuthOverlay('login');
@@ -2439,6 +2441,7 @@ async function logoutAccount() {
     hideAuthOverlay();
     const lo = document.getElementById('btnLogout');
     if (lo) lo.style.display = '';
+    startStatusStream();          // 已登录才建流：未登录连过去只会被 401 打回
     if (status.must_change) showAuthOverlay('change');
   } else {
     setAuthToken('');
@@ -3116,8 +3119,7 @@ async function startScan() {
   document.getElementById('btnStartScan').disabled = true;
   document.getElementById('btnStopScan').disabled = false;
   document.getElementById('headerStatus').textContent = '扫描中...';
-  if (statusTimer) clearInterval(statusTimer);
-  statusTimer = setInterval(pollStatus, 1000);
+  startStatusStream();
 }
 
 async function startRandomScan() {
@@ -3135,8 +3137,7 @@ async function startRandomScan() {
   document.getElementById('progressPanel').style.display = 'block';
   document.getElementById('btnStartScan').disabled = true;
   document.getElementById('btnStopScan').disabled = false;
-  if (statusTimer) clearInterval(statusTimer);
-  statusTimer = setInterval(pollStatus, 1000);
+  startStatusStream();
 }
 
 function stopScan() { fetch('/api/scan/stop', {method: 'POST'}); }
@@ -3153,42 +3154,45 @@ function setText(id, value) {
   if (el && el.textContent !== String(value)) el.textContent = value;
 }
 
+// 任务列表渲染：SSE 推送和轮询回退共用同一份逻辑
+function applyTaskList(tasks) {
+  const box = document.getElementById('taskList');
+  if (!box) return;
+  tasks = tasks || [];
+  const sig = JSON.stringify(tasks);
+  if (sig === _lastTaskSig) return;   // 数据没变，跳过整棵子树重建
+  _lastTaskSig = sig;
+  if (!tasks.length) { box.innerHTML = '<div style="color:#8b98ab;padding:6px;font-size:12px;">暂无任务</div>'; return; }
+  const icons = {running: '🟢', queued: '⏳', done: '✅', stopped: '⏹', error: '❌'};
+  box.innerHTML = tasks.map(t => {
+    const icon = icons[t.status] || '⚪';
+    const right = t.status === 'running' ? `${t.scanned}/${t.total}` :
+                  t.status === 'queued' ? `排队#${t.queue_position}` : t.status;
+    const bar = t.status === 'running'
+      ? `<div class="progress-bar" style="height:4px;margin-top:3px;"><div class="progress-fill" style="width:${t.progress || 0}%;height:4px;"></div></div>`
+      : '';
+    return `<div style="padding:4px 2px;border-bottom:1px solid var(--hairline,#1f2937);font-size:12px;">
+      ${icon} 任务 #${t.task_id} <span style="color:var(--text-secondary,#8b98ab);">${t.scan_type}</span>
+      <span style="float:right;color:${t.status==='running' ? 'var(--primary,#00d992)' : 'var(--text-secondary,#8b98ab)'};">${right}</span>${bar}
+    </div>`;
+  }).join('');
+}
+
+// 轮询回退路径：只在 SSE 不可用/断开时使用
 async function loadTaskList() {
   try {
     const r = await fetch('/api/scan/tasks');
     const d = await r.json();
-    const box = document.getElementById('taskList');
-    if (!box) return;
-    const tasks = d.tasks || [];
-    const sig = JSON.stringify(tasks);
-    if (sig === _lastTaskSig) return;   // 数据没变，跳过整棵子树重建
-    _lastTaskSig = sig;
-    if (!tasks.length) { box.innerHTML = '<div style="color:#8b98ab;padding:6px;font-size:12px;">暂无任务</div>'; return; }
-    const icons = {running: '🟢', queued: '⏳', done: '✅', stopped: '⏹', error: '❌'};
-    box.innerHTML = tasks.map(t => {
-      const icon = icons[t.status] || '⚪';
-      const right = t.status === 'running' ? `${t.scanned}/${t.total}` :
-                    t.status === 'queued' ? `排队#${t.queue_position}` : t.status;
-      const bar = t.status === 'running'
-        ? `<div class="progress-bar" style="height:4px;margin-top:3px;"><div class="progress-fill" style="width:${t.progress || 0}%;height:4px;"></div></div>`
-        : '';
-      return `<div style="padding:4px 2px;border-bottom:1px solid var(--hairline,#1f2937);font-size:12px;">
-        ${icon} 任务 #${t.task_id} <span style="color:var(--text-secondary,#8b98ab);">${t.scan_type}</span>
-        <span style="float:right;color:${t.status==='running' ? 'var(--primary,#00d992)' : 'var(--text-secondary,#8b98ab)'};">${right}</span>${bar}
-      </div>`;
-    }).join('');
+    applyTaskList(d.tasks || []);
   } catch(e) {}
 }
 
-async function pollStatus() {
-  // 轮询失败（断网 / 429 / 500）时静默跳过，避免未捕获的 Promise 拒绝刷控制台
-  let data;
-  try {
-    const res = await fetch('/api/scan/status');
-    data = await res.json();
-  } catch(e) { return; }
+// 扫描「刚结束」这个事件：原来靠轮询里的 clearInterval 天然只触发一次，
+// 换成常驻推送后必须自己记下降沿，否则每到一帧 !running 都会跳一次结果页。
+let _wasRunning = false;
+
+function applyScanStatus(data) {
   if (!data || typeof data !== 'object') return;
-  loadTaskList();
   if (data.error) {
     document.getElementById('headerStatus').textContent = '错误: ' + data.error;
     document.getElementById('headerStatus').style.color = '#ef4444';
@@ -3198,7 +3202,7 @@ async function pollStatus() {
   setText('statElapsed', Math.floor(data.elapsed || 0) + 's');
   const pct = data.progress || 0;
   const fill = document.getElementById('progressFill');
-  // 进度条只在百分比变化时改 style，避免每秒一次 style 失效重算
+  // 进度条只在百分比变化时改 style，避免每帧一次样式失效重算
   if (fill && pct !== _lastPct) {
     _lastPct = pct;
     fill.style.width = pct + '%';
@@ -3214,14 +3218,16 @@ async function pollStatus() {
     logBox.innerHTML = logs.map(l => `<div><span class="time">${escapeHtml(l.time)}</span>${escapeHtml(l.msg)}</div>`).join('');
     logBox.scrollTop = logBox.scrollHeight;
   }
+  // UI 复位是幂等的，每帧都可以做
   if (!data.running) {
-    clearInterval(statusTimer);
     document.getElementById('btnStartScan').disabled = false;
     document.getElementById('btnStopScan').disabled = true;
     document.getElementById('headerStatus').textContent = '就绪';
     document.getElementById('progressPanel').style.display = 'none';
+  }
+  // 但「跳到结果页 / 弹提示」是副作用，只在 running 由 true 变 false 那一次做
+  if (_wasRunning && !data.running) {
     loadResults(1);
-    // 只在用户仍停留在扫描页时自动跳到结果页，否则仅提示，避免打断当前操作
     const scanTab = document.getElementById('tab-scan');
     if (scanTab && !scanTab.classList.contains('hidden')) {
       document.querySelector('.tab[data-tab="results"]').click();
@@ -3229,6 +3235,61 @@ async function pollStatus() {
       toast('扫描已完成，可到结果页查看', 'success');
     }
   }
+  _wasRunning = !!data.running;
+}
+
+async function pollStatus() {
+  // 轮询失败（断网 / 429 / 500）时静默跳过，避免未捕获的 Promise 拒绝刷控制台
+  loadTaskList();
+  let data;
+  try {
+    const res = await fetch('/api/scan/status');
+    data = await res.json();
+  } catch(e) { return; }
+  applyScanStatus(data);
+}
+
+// ===== 状态推送：优先 SSE 长连接，连不上再回退到 1Hz 轮询 =====
+let eventSource = null, esErrors = 0;
+
+function startStatusStream() {
+  if (typeof EventSource === 'undefined') { startPolling(); return; }
+  if (eventSource) return;                       // 幂等：重复调用不会建第二条连接
+  const token = (typeof getAuthToken === 'function' ? getAuthToken() : '') || '';
+  const url = '/api/events' + (token ? '?token=' + encodeURIComponent(token) : '');
+  try {
+    eventSource = new EventSource(url);
+  } catch (e) {
+    eventSource = null;
+    startPolling();
+    return;
+  }
+  eventSource.addEventListener('scan', e => {
+    esErrors = 0;
+    try { applyScanStatus(JSON.parse(e.data)); } catch (err) {}
+  });
+  eventSource.addEventListener('tasks', e => {
+    esErrors = 0;
+    try { applyTaskList((JSON.parse(e.data) || {}).tasks || []); } catch (err) {}
+  });
+  eventSource.onerror = () => {
+    // EventSource 自己会重连；连续失败多半是 401 或服务端没了，回退轮询
+    esErrors++;
+    if (esErrors >= 5) { stopStatusStream(); startPolling(); }
+  };
+  // 流已接通，停掉可能存在的轮询兜底，避免两路同时刷新
+  if (statusTimer) { clearInterval(statusTimer); statusTimer = null; }
+}
+
+function stopStatusStream() {
+  if (eventSource) { try { eventSource.close(); } catch(e) {} eventSource = null; }
+  esErrors = 0;
+}
+
+function startPolling() {
+  if (statusTimer) clearInterval(statusTimer);
+  statusTimer = setInterval(pollStatus, 1000);
+  pollStatus();
 }
 
 // 结果排序状态
