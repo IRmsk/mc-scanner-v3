@@ -26,9 +26,19 @@ def _protocol_count():
         return len(json.load(f))
 
 
+# 语言变体：README.md 是英文主文档，README.zh-CN.md 是中文文档。
+_DOCS = ("README.md", "README.zh-CN.md")
+
+
+def _has(name):
+    return os.path.exists(os.path.join(_ROOT, name))
+
+
 def test_version_banner_matches_config():
-    """README 标题里的版本号必须等于 config.__version__。"""
-    for name in ("README.md", "README.en.md"):
+    """每个语言变体的标题都必须带 ``MC Scanner vX.Y.Z``，且等于 config.__version__。"""
+    for name in _DOCS:
+        if not _has(name):
+            continue
         m = re.search(r"MC Scanner v([0-9][0-9A-Za-z.\-]*)", _read(name))
         assert m, f"{name} 找不到版本标题"
         assert m.group(1) == config.__version__, (
@@ -38,11 +48,14 @@ def test_version_banner_matches_config():
 def test_protocol_badge_matches_data():
     """协议表徽章的数字必须等于 packets_auto.json 里实际版本数。"""
     expected = _protocol_count()
+    # 徽章文案随文档语言走：中文用「协议表-N 版本」，英文用「Protocol-N versions」
     cases = (
-        ("README.md", r"协议表-(\d+)%20版本"),
-        ("README.en.md", r"Protocol-(\d+)%20versions"),
+        ("README.md", r"Protocol-(\d+)%20versions"),
+        ("README.zh-CN.md", r"协议表-(\d+)%20版本"),
     )
     for name, pattern in cases:
+        if not _has(name):
+            continue
         m = re.search(pattern, _read(name))
         assert m, f"{name} 找不到协议表徽章"
         assert int(m.group(1)) == expected, (
@@ -52,7 +65,9 @@ def test_protocol_badge_matches_data():
 def test_inline_protocol_count_matches_data():
     """正文里的协议版本数也要跟上，别只改徽章。"""
     expected = _protocol_count()
-    for name, pattern in (("README.md", r"（(\d+) 个协议版本）"), ("README.en.md", r"\((\d+) versions\)")):
+    for name, pattern in (("README.md", r"\((\d+) versions\)"), ("README.zh-CN.md", r"（(\d+) 个协议版本）")):
+        if not _has(name):
+            continue
         text = _read(name)
         m = re.search(pattern, text)
         if not m:
@@ -62,8 +77,10 @@ def test_inline_protocol_count_matches_data():
 
 def test_no_hardcoded_test_count():
     """测试数量用 CI 徽章表达；手写的数字一定会漂。"""
-    for name, pattern in (("README.md", r"测试-\d+%20通过|(\d+) 个测试全部通过"),
-                          ("README.en.md", r"Tests-\d+%20passing|(\d+) tests all passing")):
+    for name, pattern in (("README.md", r"Tests-\d+%20passing|(\d+) tests all passing"),
+                          ("README.zh-CN.md", r"测试-\d+%20通过|(\d+) 个测试全部通过")):
+        if not _has(name):
+            continue
         assert not re.search(pattern, _read(name)), (
             f"{name} 里还有硬编码的测试数量，改成 CI 徽章或删掉")
 

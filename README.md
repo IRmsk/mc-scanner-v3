@@ -11,16 +11,15 @@
   ◆──────────────────────────────────────◆
 ```
 
-# MC Scanner
+# MC Scanner v3.6.5
 
 ### Is your Minecraft server in offline mode? Which ports are public? Is RCON exposed?
 
 Pure Python. No Java, no game client, no bundled binaries. One command to check, one panel to manage.
 
-[![CI](https://github.com/IRmsk/mc-scanner-v3/actions/workflows/test.yml/badge.svg)](https://github.com/IRmsk/mc-scanner-v3/actions)
-[![Tests](https://img.shields.io/badge/tests-289%20passing-00d992.svg)](#tests)
+[![tests](https://github.com/IRmsk/mc-scanner-v3/actions/workflows/test.yml/badge.svg?label=tests)](https://github.com/IRmsk/mc-scanner-v3/actions)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![Protocol](https://img.shields.io/badge/protocol-40%20versions-10b981.svg)](#capability-matrix)
+[![Protocol](https://img.shields.io/badge/Protocol-40%20versions-10b981.svg)](#capability-matrix)
 [![License](https://img.shields.io/badge/license-GPL--3.0-00d992.svg)](LICENSE)
 
 [![Release](https://img.shields.io/badge/version-3.6.5-6f42c1.svg)](CHANGELOG.md)
@@ -407,7 +406,7 @@ mc-scanner-v3/
 ├── tools/                  # gen_packets.py, get_mc_token.py, send_command.py
 ├── distributed/            # Experimental sharding
 ├── android_patches/        # Experimental Kivy/Android patch
-├── tests/                  # 289 tests
+├── tests/                  # unit and integration suite
 ├── docs/AI_PERSONAS_DETAILED.md
 ├── config.example.json     # Template kept in sync with DEFAULT_CONFIG
 ├── requirements.txt
@@ -420,7 +419,7 @@ mc-scanner-v3/
 ## Tests
 
 ```bash
-python3 -m pytest tests/ -q     # 289 passed
+python3 -m pytest tests/ -q
 ```
 
 Coverage spans protocol-table integrity, version mapping, auth probing, Login Start and Client Settings segmentation, AuthMe branching, progress storage, AI guardrails, capability gates, atomic writes and failure paths. CI runs the same suite and a `ruff` gate on every push.
